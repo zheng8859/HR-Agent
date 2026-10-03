@@ -38,6 +38,12 @@ const routes = [
         component: () => import('@/views/SmartInterviewView.vue'),
         meta: { title: '智能面试' },
       },
+      {
+        path: 'knowledge',
+        name: 'knowledge',
+        component: () => import('@/views/KnowledgeManagementView.vue'),
+        meta: { title: '知识库管理' },
+      },
     ],
   },
 ]

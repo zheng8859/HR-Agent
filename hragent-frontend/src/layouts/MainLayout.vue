@@ -47,8 +47,9 @@ function handleLogout() {
           <el-menu-item index="/resume-screening">简历筛选</el-menu-item>
           <el-menu-item index="/interview">智能面试</el-menu-item>
         </el-sub-menu>
-        <el-sub-menu index="knowledge" disabled>
+        <el-sub-menu index="knowledge">
           <template #title>知识助理</template>
+          <el-menu-item index="/knowledge">知识库管理</el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="system" disabled>
           <template #title>系统管理</template>
