@@ -1,4 +1,4 @@
-"""Agent 编排层测试（doc 43 §七）：8 契约字段、缺口、高风险、角色 gating、持久化。"""
+"""Agent 编排层测试（doc 43 §七 + doc 44 §三）：8 契约字段、缺口、高风险、角色 gating、工具产物、持久化。"""
 import logging
 from types import SimpleNamespace
 
@@ -15,35 +15,35 @@ def _user(role="hr_manager"):
     return SimpleNamespace(id="00000000-0000-0000-0000-000000000001", username="hr", role=role)
 
 
-def test_orchestrate_contract_fields_complete():
-    r = _orchestrate("生成前端工程师 JD", [], _user(), "")
+async def test_orchestrate_contract_fields_complete(db_session):
+    r = await _orchestrate("生成前端工程师 JD", [], _user(), "", db_session)
     present = set(r.keys())
     assert all(f in present for f in AGENT_CONTRACT_FIELDS)
 
 
-def test_orchestrate_jd_missing_title_ask_user():
-    r = _orchestrate("帮我生成一份 JD", [], _user(), "")
+async def test_orchestrate_jd_missing_title_ask_user(db_session):
+    r = await _orchestrate("帮我生成一份 JD", [], _user(), "", db_session)
     assert r["intent"] == "jd"
     assert r["missing_fields"] == ["job_title"]
     assert r["requires_confirmation"] is False
     assert r["artifacts"][0]["type"] == "requirements"
 
 
-def test_orchestrate_jd_complete_uses_tool():
-    r = _orchestrate("生成前端工程师 JD", [], _user(), "")
+async def test_orchestrate_jd_complete_produces_jd_confirm(db_session):
+    r = await _orchestrate("生成前端工程师 JD", [], _user(), "", db_session)
     assert r["intent"] == "jd"
     assert r["missing_fields"] == []
-    assert r["artifacts"][0]["type"] == "job_description"
+    assert r["artifacts"][0]["type"] == "jd_confirm"
 
 
-def test_orchestrate_delete_requires_confirmation():
-    r = _orchestrate("删除这份 JD", [], _user(), "")
+async def test_orchestrate_delete_requires_confirmation(db_session):
+    r = await _orchestrate("删除这份 JD", [], _user(), "", db_session)
     assert r["intent"] == "resource_delete"
     assert r["requires_confirmation"] is True
     assert r["artifacts"][0]["type"] == "delete_resource_candidates"
 
 
-def test_orchestrate_delete_confirmation_from_spec(monkeypatch):
+async def test_orchestrate_delete_confirmation_from_spec(db_session, monkeypatch):
     """高风险确认由 TOOL_SPECS 强制派生：分类器漏填/填 False 也强制 True（铁律 #3）。"""
 
     class _FakeClassifier:
@@ -58,19 +58,19 @@ def test_orchestrate_delete_confirmation_from_spec(monkeypatch):
             }
 
     monkeypatch.setattr(agent_service, "intent_classifier", _FakeClassifier())
-    r = _orchestrate("删除这份 JD", [], _user(), "")
+    r = await _orchestrate("删除这份 JD", [], _user(), "", db_session)
     assert r["requires_confirmation"] is True
     assert r["artifacts"][0]["type"] == "delete_resource_candidates"
 
 
-def test_orchestrate_employee_gated_to_chat():
-    r = _orchestrate("生成前端工程师 JD", [], _user("employee"), "")
+async def test_orchestrate_employee_gated_to_chat(db_session):
+    r = await _orchestrate("生成前端工程师 JD", [], _user("employee"), "", db_session)
     assert r["intent"] == "chat"
     assert "权限" in r["message"]
 
 
-def test_orchestrate_out_of_scope_replies_cannot():
-    r = _orchestrate("帮我查社保", [], _user(), "")
+async def test_orchestrate_out_of_scope_replies_cannot(db_session):
+    r = await _orchestrate("帮我查社保", [], _user(), "", db_session)
     assert r["intent"] == "chat"
     assert "办不了" in r["message"]
 

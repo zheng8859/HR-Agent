@@ -15,6 +15,7 @@ from app.services.intent_service import JOB_TITLE_RE, TOOL_ROLES
 # 18 种产物类型（doc 16 §7.2；exam/email 相关本期不做，仅保留边界）
 ARTIFACT_TYPES: tuple[str, ...] = (
     "requirements",
+    "jd_confirm",
     "job_description",
     "scoring_criteria",
     "resume_upload_request",

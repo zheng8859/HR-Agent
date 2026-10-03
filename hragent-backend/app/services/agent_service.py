@@ -1,7 +1,7 @@
 """Agent 编排层（doc 16 §七 / doc 43）：意图 → 缺口 → 高风险 → 工具 → 产物 → 记忆 → SSE。
 
 决策动作只有三种：普通回复（chat）/ 调用工具（use_tool）/ 追问用户（ask_user）。
-工具只能选注册表内 6 个（handler stub，见 `agent_skills`），清单外明确「办不了」。
+工具只能选注册表内 6 个（真实 handler，见 `agent_skills`），清单外明确「办不了」。
 """
 from __future__ import annotations
 
@@ -74,30 +74,25 @@ def _chat_reply(message: str) -> str:
 def _missing_reply(intent: str, missing_fields: list[str]) -> str:
     if intent == "jd" and "job_title" in missing_fields:
         return "请先告诉我岗位名称（例如「前端开发工程师」），我再为你生成 JD。"
+    if intent == "resource_delete" and "target" in missing_fields:
+        return "请指明要删除什么资源（例如「删除前端工程师的 JD」）。"
     return "还缺少必要信息，请补充后我再继续。"
 
 
 def _tool_reply(intent: str) -> str:
     name = TOOL_SPECS.get(intent, {}).get("name", intent)
-    return f"已为你准备「{name}」（本期为占位产物，真实生成见文档 44）。"
+    return f"已为你准备「{name}」。"
 
 
-def _orchestrate(
-    message: str, attachments: list[str], user: User, memory: str
+async def _orchestrate(
+    message: str, attachments: list[str], user: User, memory: str, db: AsyncSession
 ) -> dict[str, Any]:
-    """受控编排决策（doc 16 §四/§五）：意图 → 角色 → 缺口 → 高风险 → 工具 → 回复。"""
+    """受控编排决策（doc 16 §四/§五 + doc 44）：意图 → 角色 → 缺口 → 工具 → 高风险 → 回复。"""
     result = intent_classifier.classify(message, attachments, memory)
     intent = result["intent"]
     route = result["route"]
     source = result["source"]
-    requires_confirmation = result["requires_confirmation"]
     missing_fields = list(result["missing_fields"])
-    action = result["action"]
-
-    # 高风险锁定唯一真源（铁律 #3 / doc 16 §5.2）：删除类动作由 TOOL_SPECS 强制派生，
-    # 不信任分类器/慢通道 LLM 透传的 requires_confirmation，杜绝绕过确认直接 dispatch。
-    if TOOL_SPECS.get(intent, {}).get("requires_confirmation"):
-        requires_confirmation = True
 
     steps = [AgentStep(id="intent", title="识别意图", status="completed", detail=f"intent={intent}")]
 
@@ -112,7 +107,7 @@ def _orchestrate(
             source=source,
         )
 
-    # 缺信息 → 追问（doc 16 §4.1）
+    # 快通道缺口（doc 16 §4.1）：JD 缺岗位名称 / 删除缺目标，直接追问
     if missing_fields:
         steps.append(AgentStep(id="gap", title="缺口检查", status="completed", detail="缺少必要信息"))
         return _resp(
@@ -126,42 +121,64 @@ def _orchestrate(
             source=source,
         )
 
-    # 缺确认 → 请求授权（doc 16 §5.2 删除锁定）
-    if requires_confirmation:
-        steps.append(AgentStep(id="risk", title="高风险校验", status="completed", detail="需二次确认"))
-        parsed = agent_core._parse_delete_request(message, memory) or agent_core._fallback_parse_delete_request(
-            message
-        )
-        target = (parsed or {}).get("raw", message)
-        return _resp(
-            f"删除是不可逆操作，请确认要删除：{target}。回复「确认删除」后执行（本期为占位）。",
+    # 调用工具（doc 16 §二 + doc 44：真实执行；前置校验/高风险判定下沉到 handler）
+    if intent != "chat" and skill_dispatcher.is_registered(intent):
+        outcome = await skill_dispatcher.dispatch(
             intent,
-            route,
-            steps=steps,
-            artifacts=[{"type": "delete_resource_candidates", "targets": [parsed] if parsed else []}],
-            requires_confirmation=True,
-            source=source,
+            {"message": message, "attachments": attachments, "memory": memory},
+            user,
+            db,
         )
-
-    # 调用工具（doc 16 §二，handler stub）
-    if action == "use_tool" and intent != "chat":
-        artifact = skill_dispatcher.dispatch(intent, {"message": message})
         steps.append(
             AgentStep(
                 id="tool",
                 title=TOOL_SPECS[intent]["name"],
                 status="completed",
-                detail="执行工具（占位）",
+                detail="执行工具",
                 tool=intent,
             )
         )
+        steps.extend(outcome.steps)
+
+        # 工具下沉的前置缺口（简历附件 / 编辑目标等）
+        if outcome.missing_fields:
+            steps.append(AgentStep(id="gap", title="缺口检查", status="completed", detail="缺少必要信息"))
+            return _resp(
+                outcome.message or _missing_reply(intent, outcome.missing_fields),
+                intent,
+                route,
+                steps=steps,
+                artifacts=outcome.artifacts
+                or [{"type": "requirements", "intent": intent, "missing_fields": outcome.missing_fields}],
+                suggestions=outcome.suggestions or _SUGGESTIONS.get(intent, []),
+                missing_fields=outcome.missing_fields,
+                source=source,
+            )
+
+        # 高风险锁定唯一真源（铁律 #3 / doc 16 §5.2）：TOOL_SPECS 声明 + 未执行完成即强制确认
+        requires_confirmation = outcome.requires_confirmation or (
+            TOOL_SPECS.get(intent, {}).get("requires_confirmation") and not outcome.executed
+        )
+        if requires_confirmation:
+            steps.append(AgentStep(id="risk", title="高风险校验", status="completed", detail="需二次确认"))
+            return _resp(
+                outcome.message or f"请确认后执行「{TOOL_SPECS[intent]['name']}」。",
+                intent,
+                route,
+                steps=steps,
+                artifacts=outcome.artifacts,
+                requires_confirmation=True,
+                suggestions=outcome.suggestions or _SUGGESTIONS.get(intent, []),
+                source=source,
+            )
+
         return _resp(
-            _tool_reply(intent),
+            outcome.message or _tool_reply(intent),
             intent,
             route,
             steps=steps,
-            artifacts=[artifact],
-            suggestions=_SUGGESTIONS.get(intent, []),
+            artifacts=outcome.artifacts,
+            suggestions=outcome.suggestions or _SUGGESTIONS.get(intent, []),
             source=source,
         )
 
@@ -199,8 +216,20 @@ async def _persist(
     )
     if resp.intent == "chat":
         return
-    # 工具调用 / 高风险操作留痕（doc 16 §五 / doc 43 审计）
-    if resp.requires_confirmation:
+    # 删除确认执行（delete_resource_result）→ 高风险 executed；否则按确认态/工具调用留痕
+    executed = any(
+        isinstance(a, dict) and a.get("type") == "delete_resource_result"
+        for a in (resp.artifacts or [])
+    )
+    if executed:
+        audit_logger.log_high_risk(
+            user_id=user.id,
+            username=user.username,
+            intent=resp.intent,
+            target=resp.intent,
+            outcome="executed",
+        )
+    elif resp.requires_confirmation:
         audit_logger.log_high_risk(
             user_id=user.id,
             username=user.username,
@@ -223,7 +252,7 @@ async def handle_message(
 ) -> AgentChatResponse:
     """非流式编排：返回完整 AgentChatResponse（8 契约字段）。"""
     conv, memory = await _resolve_conversation(request, user, db)
-    result = _orchestrate(request.message, request.attachments, user, memory)
+    result = await _orchestrate(request.message, request.attachments, user, memory, db)
     resp = AgentChatResponse(**result, conversation_id=conv.id)
     await _persist(conv, request, resp, user, db)
     return resp
@@ -234,7 +263,7 @@ async def stream_chat(
 ) -> AsyncIterator[str]:
     """对话流式 SSE：thinking → plan → delta → final（doc 16 §7.3）。"""
     conv, memory = await _resolve_conversation(request, user, db)
-    result = _orchestrate(request.message, request.attachments, user, memory)
+    result = await _orchestrate(request.message, request.attachments, user, memory, db)
     resp = AgentChatResponse(**result, conversation_id=conv.id)
     await _persist(conv, request, resp, user, db)
 
@@ -253,7 +282,7 @@ async def stream_agent(
 ) -> AsyncIterator[str]:
     """任务型流式 SSE：progress → delta → artifact → final（doc 16 §7.3）。"""
     conv, memory = await _resolve_conversation(request, user, db)
-    result = _orchestrate(request.message, request.attachments, user, memory)
+    result = await _orchestrate(request.message, request.attachments, user, memory, db)
     resp = AgentChatResponse(**result, conversation_id=conv.id)
     await _persist(conv, request, resp, user, db)
 
