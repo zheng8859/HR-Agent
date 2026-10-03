@@ -1,14 +1,24 @@
 """知识文档实体（embedding 用 pgvector Vector(1536)）。"""
 from __future__ import annotations
 
+import enum
 import uuid
 
-from sqlalchemy import BigInteger, ForeignKey, String, Text
+from sqlalchemy import BigInteger, ForeignKey, Integer, String, Text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pgvector.sqlalchemy import Vector
 
 from app.models.base import BaseModel
+
+
+class DocumentStatus(str, enum.Enum):
+    """文档处理状态机：uploaded → processing → processed / failed。"""
+
+    uploaded = "uploaded"
+    processing = "processing"
+    processed = "processed"
+    failed = "failed"
 
 
 class Document(BaseModel):
@@ -24,6 +34,11 @@ class Document(BaseModel):
     embedding: Mapped[list[float] | None] = mapped_column(Vector(1536), nullable=True)
     category: Mapped[str | None] = mapped_column(String(128), nullable=True)
     tags: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    status: Mapped[str] = mapped_column(
+        String(32), default=DocumentStatus.uploaded.value, nullable=False
+    )
+    chunk_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
     user_id: Mapped[uuid.UUID | None] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id"), nullable=True
     )

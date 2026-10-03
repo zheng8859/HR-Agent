@@ -1,9 +1,23 @@
 """HR Agent 后端入口（FastAPI）。"""
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from app.api.v1.api import api_router
+from app.core.database import async_session_factory
+from app.services import role_service
 
-app = FastAPI(title="HR Agent API", version="0.2.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """启动时幂等预置内置角色（测试中由 role_service 列表/详情兜底）。"""
+    async with async_session_factory() as db:
+        await role_service.ensure_builtin_roles(db)
+        await db.commit()
+    yield
+
+
+app = FastAPI(title="HR Agent API", version="0.4.0", lifespan=lifespan)
 app.include_router(api_router)
 
 
