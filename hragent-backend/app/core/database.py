@@ -23,6 +23,15 @@ async_session_factory = async_sessionmaker(
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    """FastAPI 依赖：yield 一个异步 session，请求结束后关闭。"""
+    """FastAPI 依赖：yield 一个异步 session，请求成功提交、异常回滚，结束后关闭。
+
+    服务层只做 flush（不 commit），持久化由本依赖在请求结束时统一提交，
+    保证跨请求可见（list 能读到刚写入的记录）。
+    """
     async with async_session_factory() as session:
-        yield session
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
