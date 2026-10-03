@@ -32,3 +32,4 @@ langchain-community
 # 测试
 pytest
 pytest-asyncio
+pytest-json-report

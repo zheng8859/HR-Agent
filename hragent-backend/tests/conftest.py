@@ -4,16 +4,23 @@ Document.embedding 为 pgvector Vector(1536)，故测试库必须用 PostgreSQL�
 会话级：建库 + 建扩展 + 建表一次；函数级：每个测试一个事务，结束回滚实现隔离。
 """
 import asyncpg
+import pytest
 import pytest_asyncio
+from pathlib import Path
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
-from app.models import Base
+from app.core.security import create_access_token, get_password_hash
+from app.evaluations.eval_seed import seed_eval_kb
+from app.models import Base, User
 
 TEST_DB_NAME = "hragent_test"
 TEST_DATABASE_URL = (
     "postgresql+asyncpg://hragent:hragent_dev_password@localhost:5432/hragent_test"
 )
+
+# Golden 测试集根目录（doc 42 §6.1：backend/evals/{agent,dify,rag}_cases/*.json）
+EVALS_DIR = Path(__file__).resolve().parent.parent / "evals"
 
 
 async def _ensure_test_db() -> None:
@@ -72,3 +79,40 @@ async def client(db_session):
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as c:
         yield c
     app.dependency_overrides.clear()
+
+
+@pytest.fixture(scope="session")
+def evals_dir() -> Path:
+    """Golden 测试集根目录（供 L1/L3 测试加载样本）。"""
+    return EVALS_DIR
+
+
+@pytest_asyncio.fixture
+async def eval_user(db_session) -> User:
+    """评测专用用户（hr_manager，可写招聘/知识资源）。"""
+    user = User(
+        username="eval_user",
+        email="eval_user@example.com",
+        hashed_password=get_password_hash("secret123"),
+        role="hr_manager",
+        is_superuser=False,
+        is_active=True,
+    )
+    db_session.add(user)
+    await db_session.flush()
+    return user
+
+
+@pytest_asyncio.fixture
+async def eval_kb(db_session, eval_user):
+    """评测规范知识库 + 4 篇文档（mock embedding，doc 42 §1.3 检索样本依赖）。"""
+    kb = await seed_eval_kb(db_session, eval_user)
+    await db_session.flush()
+    return kb
+
+
+@pytest_asyncio.fixture
+async def auth_headers(eval_user) -> dict:
+    """评测用户的 Bearer 认证头。"""
+    token = create_access_token(subject=eval_user.username)
+    return {"Authorization": f"Bearer {token}"}
