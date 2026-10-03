@@ -1,0 +1,27 @@
+# HR Agent 本地开发基础设施 —— 仅 PostgreSQL(pgvector)
+# 启动: docker compose up -d
+# 停止: docker compose down        （数据保留在 pgdata 卷中；down -v 才清除数据）
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: hragent-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-hragent}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hragent_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-hragent}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # 首次启动自动执行该目录下的 SQL，创建 vector 扩展（幂等）
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-hragent} -d $${POSTGRES_DB:-hragent}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:
+    name: hragent_pgdata

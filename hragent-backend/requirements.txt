@@ -1,0 +1,34 @@
+# Web 框架
+fastapi
+uvicorn[standard]
+python-multipart
+
+# 数据层
+sqlalchemy[asyncio]
+asyncpg
+alembic
+pgvector
+greenlet
+
+# 配置与校验
+pydantic
+pydantic-settings
+
+# 认证
+python-jose[cryptography]
+passlib[bcrypt]
+
+# 外部服务调用
+httpx
+
+# 文档解析
+pdfplumber
+python-docx
+
+# RAG 组织
+langchain
+langchain-community
+
+# 测试
+pytest
+pytest-asyncio
