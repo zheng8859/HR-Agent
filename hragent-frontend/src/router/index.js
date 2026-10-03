@@ -26,6 +26,12 @@ const routes = [
         component: () => import('@/views/ScoringCriteriaView.vue'),
         meta: { title: '评分标准' },
       },
+      {
+        path: 'resume-screening',
+        name: 'resume-screening',
+        component: () => import('@/views/ResumeScreeningView.vue'),
+        meta: { title: '简历筛选' },
+      },
     ],
   },
 ]
