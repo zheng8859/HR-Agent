@@ -44,6 +44,12 @@ const routes = [
         component: () => import('@/views/KnowledgeManagementView.vue'),
         meta: { title: '知识库管理' },
       },
+      {
+        path: 'knowledge-qa',
+        name: 'knowledge-qa',
+        component: () => import('@/views/KnowledgeQaView.vue'),
+        meta: { title: '知识问答' },
+      },
     ],
   },
 ]

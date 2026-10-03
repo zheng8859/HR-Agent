@@ -50,6 +50,7 @@ function handleLogout() {
         <el-sub-menu index="knowledge">
           <template #title>知识助理</template>
           <el-menu-item index="/knowledge">知识库管理</el-menu-item>
+          <el-menu-item index="/knowledge-qa">知识问答</el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="system" disabled>
           <template #title>系统管理</template>
