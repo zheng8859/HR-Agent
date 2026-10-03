@@ -10,15 +10,11 @@ from app.services.dify_service import dify_client
 
 JD_SECTIONS = ("岗位职责", "任职要求", "技能要求")
 
-# 面试七要素（doc 16 §7.2 / doc 42 §1.3）→ mock 输出键
+# 面试三要素（doc 15 §2.4 / doc 42 §1.3）→ mock 输出键
 INTERVIEW_KEY_MAP = {
     "goal": "面试目标",
     "process": "面试流程",
-    "core_questions": "核心问题",
-    "follow_up": "追问建议",
-    "dimensions": "考察维度",
-    "scoring_advice": "评分建议",
-    "risk_points": "风险点",
+    "core_questions": "面试题目",
 }
 
 
@@ -32,7 +28,7 @@ def jd_actual_sections(output: dict) -> list[str]:
 
 
 def interview_actual_sections(output: dict) -> list[str]:
-    """面试方案七要素：按输出键映射章节名，键非空即覆盖。"""
+    """面试方案三要素：按输出键映射章节名，键非空即覆盖。"""
     return [label for key, label in INTERVIEW_KEY_MAP.items() if output.get(key)]
 
 
@@ -83,7 +79,7 @@ class DifyEvaluator(BaseEvaluator):
                 interview_actual_sections(output), structure
             )
             metrics["structure_completeness"] = completeness
-            # 专属而非模板：目标与核心问题均非空
+            # 专属而非模板：目标与面试题目均非空
             customized = bool(output.get("goal")) and bool(output.get("core_questions"))
             metrics["customized"] = 1.0 if customized else 0.0
             passed = completeness >= structure_min and customized

@@ -1,8 +1,8 @@
-"""面试方案服务：数据依赖守卫、七要素渲染、候选人解析四态、状态联动、所有权隔离。
+"""面试方案服务：数据依赖守卫、三要素渲染、候选人解析四态、状态联动、所有权隔离。
 
 设计要点（doc 15 §2.4 + doc 38）：
 - 防空转：面试方案必须绑定一条已完成简历评估（`total_score` 非空），未关联/未完成明确拒绝。
-- 方案七要素：面试目标/面试流程/核心问题/追问建议/考察维度/评分建议/候选人风险点，渲染为 markdown 落库。
+- 方案三要素：面试目标/面试流程/面试题目（题目不少于 5 道），渲染为 markdown 落库。
 - 状态联动：生成/重新生成后把关联评估状态置为 `interview`（幂等）。
 - 候选人解析四态：matched/no_match/ambiguous/no_specific，供 Agent 解析口语化指代。
 - 面试方案属敏感信息，list/get 仅返回本人（`user_id` 过滤），他人 404。
@@ -30,15 +30,11 @@ from app.schemas.interview_plan import (
 )
 from app.services.dify_service import dify_client
 
-# 方案七要素分区标题（顺序即渲染顺序）
+# 方案三要素分区标题（顺序即渲染顺序）
 INTERVIEW_SECTION_TITLES: tuple[str, ...] = (
     "面试目标",
     "面试流程",
-    "核心问题",
-    "追问建议",
-    "考察维度",
-    "评分建议",
-    "候选人风险点",
+    "面试题目",
 )
 
 
@@ -70,27 +66,20 @@ def resolve_candidate(query: str, candidates: Sequence[Any]) -> CandidateResolut
     )
 
 
-# ---------- 七要素渲染 ----------
+# ---------- 三要素渲染 ----------
 
 
 def format_plan(output: dict[str, Any]) -> str:
-    """把 Dify 七要素输出渲染为 markdown 分区。"""
+    """把 Dify 三要素输出渲染为 markdown 分区。"""
     questions = output.get("core_questions") or []
     lines: list[str] = []
     for title in INTERVIEW_SECTION_TITLES:
         lines.append(f"## {title}")
-        if title == "核心问题":
+        if title == "面试题目":
             for i, q in enumerate(questions, 1):
                 lines.append(f"{i}. {q}")
         else:
-            key = {
-                "面试目标": "goal",
-                "面试流程": "process",
-                "追问建议": "follow_up",
-                "考察维度": "dimensions",
-                "评分建议": "scoring_advice",
-                "候选人风险点": "risk_points",
-            }[title]
+            key = "goal" if title == "面试目标" else "process"
             lines.append(str(output.get(key) or "").strip())
         lines.append("")
     return "\n".join(lines).strip()
@@ -100,14 +89,11 @@ def format_plan(output: dict[str, Any]) -> str:
 
 
 def _build_inputs(ev: ResumeEvaluation, jd: JobDescription | None) -> dict[str, Any]:
+    """面试方案只依赖简历 + JD（三要素简化版，doc 38）。"""
     return {
-        "candidate_name": ev.candidate_name or "",
-        "candidate_position": ev.candidate_position or "",
         "resume_content": ev.resume_content or "",
         "job_title": jd.title if jd else "",
         "job_content": jd.content if jd else "",
-        "total_score": ev.total_score,
-        "evaluation_metrics": ev.evaluation_metrics or [],
     }
 
 
