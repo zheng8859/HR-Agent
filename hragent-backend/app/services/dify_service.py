@@ -71,6 +71,27 @@ MOCK_RESUME_OUTPUT: dict[str, Any] = {
 }
 
 
+# type=4 面试方案 mock：七要素（面试目标/流程/核心问题/追问建议/考察维度/评分建议/候选人风险点）
+MOCK_INTERVIEW_OUTPUT: dict[str, Any] = {
+    "goal": "评估候选人张三（前端开发工程师）与岗位要求的匹配度，重点验证 Vue/TypeScript 实战能力与项目深度。",
+    "process": (
+        "1. 开场自我介绍（3 分钟）；2. 技术面：Vue 3 响应式原理与 TypeScript 类型设计（20 分钟）；"
+        "3. 项目面：中台/微前端项目难点复盘（15 分钟）；4. 行为面：协作与稳定性（10 分钟）；"
+        "5. 候选人反问与答疑（5 分钟）。"
+    ),
+    "core_questions": [
+        "请说明 Vue 3 响应式系统与 Vue 2 的核心差异，以及你如何在项目中利用这些特性优化性能？",
+        "描述一个你用 TypeScript 重构既有代码的案例，遇到过哪些类型设计难点？",
+        "介绍你参与过的微前端/中台项目，你在其中承担什么角色、解决了什么关键技术问题？",
+        "遇到过线上性能瓶颈吗？你是如何定位并优化的？",
+    ],
+    "follow_up": "对候选人回答中模糊的细节追问「具体数据/指标」「你在其中的个人贡献」「失败案例与复盘」；技术回答需追问边界条件与取舍。",
+    "dimensions": "重点考察：技能匹配度（22/25，优势项）、项目经验匹配度（14/20，需深挖）、综合素质（6/10，稳定性需确认）。",
+    "scoring_advice": "建议沿用简历评估五维度权重（学历20/经验25/技能25/项目20/综合10），面试表现按 0-10 打分后折算，重点扣分项写明依据。",
+    "risk_points": "项目经验匹配度偏低（14/20）且微前端细节需验证；沟通表达需观察稳定性；注意候选人期望薪资是否在岗位区间内。",
+}
+
+
 class DifyClient:
     """Dify 工作流客户端。无密钥时 mock 模式。"""
 
@@ -114,6 +135,12 @@ class DifyClient:
         if self.mock_mode:
             return MOCK_RESUME_OUTPUT
         return await self._run_workflow(settings.dify_resume_workflow_id, inputs)
+
+    async def run_interview_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
+        """type=4：面试方案（七要素）。"""
+        if self.mock_mode:
+            return MOCK_INTERVIEW_OUTPUT
+        return await self._run_workflow(settings.dify_interview_workflow_id, inputs)
 
     async def stream_jd_workflow(self, inputs: dict[str, Any]) -> AsyncIterator[str]:
         """type=1 流式：逐块 yield 文本片段（mock 按固定分块）。"""

@@ -22,6 +22,7 @@ class Settings(BaseSettings):
     dify_jd_workflow_id: str = ""       # type=1 JD 生成
     dify_scoring_workflow_id: str = ""  # type=2 评分标准生成
     dify_resume_workflow_id: str = ""   # type=3 简历评估
+    dify_interview_workflow_id: str = ""  # type=4 面试方案
     dify_timeout_seconds: int = 60
 
     # 简历上传限制（doc 37：PDF/DOC/DOCX，默认 ≤10MB，服务端强制）
