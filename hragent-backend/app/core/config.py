@@ -13,8 +13,23 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24  # 24 小时
 
-    # RAG
+    # RAG 检索（doc 40：向量 + tsvector 全文，0.7/0.3 加权，阈值过滤）
     rag_min_similarity_score: float = 0.2
+    rag_top_k: int = 5              # 进入生成/重排的候选文档数
+    rag_source_chunks: int = 3      # 返回给前端的来源片段数
+    rag_vector_weight: float = 0.7  # 向量分权重
+    rag_text_weight: float = 0.3    # 全文（tsvector）分权重
+
+    # LLM（Qwen）：走库判断 / 查询改写 / 答案生成；未配置时 llm_service 走确定性 mock
+    llm_base_url: str = ""
+    llm_api_key: str = ""
+    llm_model: str = "qwen-turbo"
+
+    # Rerank（gte-rerank-v2）：检索重排；未配置或调用失败时降级为原始召回排序
+    rerank_base_url: str = ""
+    rerank_api_key: str = ""
+    rerank_model: str = "gte-rerank-v2"
+    rerank_top_k: int = 5
 
     # Dify（未配置时各服务走 mock，见 36 文档前置检查）
     dify_base_url: str = ""
@@ -52,6 +67,14 @@ class Settings(BaseSettings):
     @property
     def embedding_configured(self) -> bool:
         return bool(self.embedding_base_url and self.embedding_api_key)
+
+    @property
+    def llm_configured(self) -> bool:
+        return bool(self.llm_base_url and self.llm_api_key)
+
+    @property
+    def rerank_configured(self) -> bool:
+        return bool(self.rerank_base_url and self.rerank_api_key)
 
 
 settings = Settings()
