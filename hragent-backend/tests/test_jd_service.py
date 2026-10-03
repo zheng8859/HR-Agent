@@ -70,6 +70,23 @@ async def test_generate_jd_stream_retry_after_interrupt():
     await gen2.aclose()
 
 
+async def test_generate_jd_stream_emits_error_event(monkeypatch):
+    from app.services import dify_service
+
+    async def boom(_inputs):
+        yield "部分内容"
+        raise RuntimeError("dify down")
+
+    monkeypatch.setattr(dify_service.dify_client, "stream_jd_workflow", boom)
+    request = JDGenerateRequest(title="前端开发工程师")
+    events = []
+    async for ev in jd_svc.generate_jd_stream(request):
+        events.append(ev)
+    assert events[0]["event"] == "thinking"
+    assert events[-1]["event"] == "error"
+    assert "dify down" in events[-1]["data"]
+
+
 # ---------- CRUD 与状态机 ----------
 
 

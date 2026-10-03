@@ -81,16 +81,22 @@ async def generate_jd(request: JDGenerateRequest) -> JobDescriptionCreate:
 
 
 async def generate_jd_stream(request: JDGenerateRequest) -> AsyncIterator[dict]:
-    """SSE 流式生成：thinking → delta* → final。final 携带完整结构化初稿。"""
+    """SSE 流式生成：thinking → delta* → final。final 携带完整结构化初稿。
+
+    流中出错时发出 error 事件（可读消息），客户端保留输入可重试，不静默断流。
+    """
     title = await _resolve_title(request)
     yield {"event": "thinking", "data": "正在生成 JD 初稿..."}
-    chunks: list[str] = []
-    async for chunk in dify_client.stream_jd_workflow({}):
-        chunks.append(chunk)
-        yield {"event": "delta", "data": chunk}
-    content = "".join(chunks)
-    final = _build_create(request, title, content, {})
-    yield {"event": "final", "data": final.model_dump(mode="json")}
+    try:
+        chunks: list[str] = []
+        async for chunk in dify_client.stream_jd_workflow({}):
+            chunks.append(chunk)
+            yield {"event": "delta", "data": chunk}
+        content = "".join(chunks)
+        final = _build_create(request, title, content, {})
+        yield {"event": "final", "data": final.model_dump(mode="json")}
+    except Exception as exc:  # noqa: BLE001 —— 流式错误需转为可读 error 事件
+        yield {"event": "error", "data": f"JD 生成失败，请重试：{exc}"}
 
 
 # ---------- CRUD 与状态机 ----------
