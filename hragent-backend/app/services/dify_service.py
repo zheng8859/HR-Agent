@@ -1,5 +1,6 @@
-"""Dify 工作流客户端：type=1 JD 生成 / type=2 评分标准生成 / type=3 简历评估。
+"""Dify 工作流客户端（方案 A：单应用单 API Key，靠 inputs.type=1~4 在应用内分支）。
 
+type=1 JD 生成 / type=2 评分标准生成 / type=3 简历评估 / type=4 面试方案。
 未配置密钥（无 .env）时进入 mock 模式，返回确定性产物，保证测试与本地联调可跑
 （见 36 文档前置检查「如果暂时没有，测试使用 mock 数据」）。配置后无需改服务层。
 """
@@ -107,8 +108,8 @@ class DifyClient:
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self.api_key}"}
 
-    async def _run_workflow(self, workflow_id: str, inputs: dict[str, Any]) -> dict[str, Any]:
-        """阻塞式调用工作流，返回 outputs。"""
+    async def _run_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
+        """阻塞式调用工作流（方案 A：单应用单 key，type 区分分支），返回 outputs。"""
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = await client.post(
                 f"{self.base_url}/v1/workflows/run",
@@ -122,25 +123,25 @@ class DifyClient:
         """type=1：生成 JD。"""
         if self.mock_mode:
             return MOCK_JD_OUTPUT
-        return await self._run_workflow(settings.dify_jd_workflow_id, inputs)
+        return await self._run_workflow({**inputs, "type": 1})
 
     async def run_scoring_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """type=2：生成评分标准。"""
         if self.mock_mode:
             return MOCK_SCORING_OUTPUT
-        return await self._run_workflow(settings.dify_scoring_workflow_id, inputs)
+        return await self._run_workflow({**inputs, "type": 2})
 
     async def run_resume_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """type=3：简历评估（五维度打分 + 理由）。"""
         if self.mock_mode:
             return MOCK_RESUME_OUTPUT
-        return await self._run_workflow(settings.dify_resume_workflow_id, inputs)
+        return await self._run_workflow({**inputs, "type": 3})
 
     async def run_interview_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """type=4：面试方案（七要素）。"""
         if self.mock_mode:
             return MOCK_INTERVIEW_OUTPUT
-        return await self._run_workflow(settings.dify_interview_workflow_id, inputs)
+        return await self._run_workflow({**inputs, "type": 4})
 
     async def stream_jd_workflow(self, inputs: dict[str, Any]) -> AsyncIterator[str]:
         """type=1 流式：逐块 yield 文本片段（mock 按固定分块）。"""
@@ -153,7 +154,7 @@ class DifyClient:
                 "POST",
                 f"{self.base_url}/v1/workflows/run",
                 headers=self._headers(),
-                json={"inputs": inputs, "response_mode": "streaming", "user": "hr-agent"},
+                json={"inputs": {**inputs, "type": 1}, "response_mode": "streaming", "user": "hr-agent"},
             ) as resp:
                 resp.raise_for_status()
                 async for line in resp.aiter_lines():

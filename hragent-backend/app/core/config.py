@@ -31,13 +31,9 @@ class Settings(BaseSettings):
     rerank_model: str = "gte-rerank-v2"
     rerank_top_k: int = 5
 
-    # Dify（未配置时各服务走 mock，见 36 文档前置检查）
+    # Dify（方案 A：单应用单 API Key，靠 inputs.type=1~4 在应用内分支；未配置时各服务走 mock）
     dify_base_url: str = ""
     dify_api_key: str = ""
-    dify_jd_workflow_id: str = ""       # type=1 JD 生成
-    dify_scoring_workflow_id: str = ""  # type=2 评分标准生成
-    dify_resume_workflow_id: str = ""   # type=3 简历评估
-    dify_interview_workflow_id: str = ""  # type=4 面试方案
     dify_timeout_seconds: int = 60
 
     # 简历上传限制（doc 37：PDF/DOC/DOCX，默认 ≤10MB，服务端强制）
