@@ -132,6 +132,8 @@ async def update_jd(
     for key, value in schema.model_dump(exclude_unset=True).items():
         setattr(jd, key, value)
     await db.flush()
+    # updated_at 带 onupdate=now()，UPDATE 后属性过期；刷新避免响应序列化时触发惰性 IO（MissingGreenlet）
+    await db.refresh(jd)
     return jd
 
 
@@ -143,6 +145,8 @@ async def change_status(
     jd = await get_jd(jd_id, db)
     jd.status = status
     await db.flush()
+    # updated_at 带 onupdate=now()，UPDATE 后属性过期；刷新避免响应序列化时触发惰性 IO（MissingGreenlet）
+    await db.refresh(jd)
     return jd
 
 
