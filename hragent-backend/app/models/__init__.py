@@ -1,7 +1,7 @@
 """ORM 模型聚合导出：导入即完成 mapper 注册，供 Alembic 与 create_all 使用。"""
 from app.models.base import Base, BaseModel
 from app.models.conversation import Conversation, ConversationStatus
-from app.models.document import Document
+from app.models.document import Document, DocumentStatus
 from app.models.interview_plan import InterviewPlan
 from app.models.jd_status import JDStatus
 from app.models.job_description import JobDescription
@@ -19,6 +19,7 @@ __all__ = [
     "Conversation",
     "ConversationStatus",
     "Document",
+    "DocumentStatus",
     "InterviewPlan",
     "JDStatus",
     "JobDescription",

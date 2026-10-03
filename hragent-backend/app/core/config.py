@@ -29,9 +29,29 @@ class Settings(BaseSettings):
     resume_max_size_mb: int = 10
     resume_allowed_types: str = "pdf,doc,docx"
 
+    # 文档上传与知识库（doc 39：PDF/DOC/DOCX/TXT，默认 ≤20MB，服务端强制）
+    upload_dir: str = "uploads"
+    document_max_size_mb: int = 20
+    document_allowed_types: str = "pdf,doc,docx,txt"
+
+    # Embedding（未配置时 embedding_service 走确定性 mock）
+    embedding_dimension: int = 1536
+    embedding_base_url: str = ""
+    embedding_api_key: str = ""
+    embedding_model: str = "text-embedding-3-small"
+
+    # 语义切片参数（doc 39：每段 ≤500、严禁 >800、超长强制切分、过短合并）
+    chunk_max_chars: int = 500
+    chunk_force_split_chars: int = 800
+    chunk_min_chars: int = 50
+
     @property
     def dify_configured(self) -> bool:
         return bool(self.dify_base_url and self.dify_api_key)
+
+    @property
+    def embedding_configured(self) -> bool:
+        return bool(self.embedding_base_url and self.embedding_api_key)
 
 
 settings = Settings()
