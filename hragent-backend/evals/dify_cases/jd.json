@@ -1,0 +1,102 @@
+[
+  {
+    "id": "golden_dify_001",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "前端开发工程师", "department": "技术部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_002",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "产品经理", "department": "产品部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_003",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "后端开发工程师", "department": "技术部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": ["regression"]
+  },
+  {
+    "id": "golden_dify_004",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "数据分析师", "department": "数据部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_005",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "UI 设计师", "department": "设计部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_006",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "测试工程师", "department": "质量部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_007",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "运营专员", "department": "运营部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_008",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "算法工程师", "department": "技术部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_009",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "人力资源专员", "department": "人力资源部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_010",
+    "layer": "content",
+    "module": "jd",
+    "input": { "job_title": "财务专员", "department": "财务部" },
+    "expected_output": { "structure": ["岗位职责", "任职要求", "技能要求"], "quality_checks": { "structure_complete": true, "skills_covered": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  }
+]

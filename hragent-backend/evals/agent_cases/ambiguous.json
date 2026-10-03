@@ -1,0 +1,152 @@
+[
+  {
+    "id": "golden_agent_007",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "帮我从简历里筛出合适的人", "attachments": [] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": ["regression", "fallback"]
+  },
+  {
+    "id": "golden_agent_023",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "刚才那份 JD 帮我改一下", "attachments": [] },
+    "expected": { "intent": "jd_edit", "route": "recruitment.jd", "tool": "jd_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_024",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "帮我弄一下面试的东西", "attachments": [] },
+    "expected": { "intent": "interview_plan", "route": "recruitment.interview", "tool": "interview_plan", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_025",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "把这个岗位描述润色一下", "attachments": [] },
+    "expected": { "intent": "jd_edit", "route": "recruitment.jd", "tool": "jd_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_026",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "看看这个候选人合不合适", "attachments": [] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_027",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "安排个面试吧", "attachments": [] },
+    "expected": { "intent": "interview_plan", "route": "recruitment.interview", "tool": "interview_plan", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_028",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "这个岗位的要求再完善完善", "attachments": [] },
+    "expected": { "intent": "jd_edit", "route": "recruitment.jd", "tool": "jd_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_029",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "帮我筛人", "attachments": [] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_030",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "给这个候选人安排个面试", "attachments": [] },
+    "expected": { "intent": "interview_plan", "route": "recruitment.interview", "tool": "interview_plan", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_031",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "写个招聘启事", "attachments": [] },
+    "expected": { "intent": "jd", "route": "recruitment.jd", "tool": "jd", "requires_confirmation": false, "missing_fields": ["job_title"] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": ["missing_field"]
+  },
+  {
+    "id": "golden_agent_032",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "把这个评分标准弄得合理一点", "attachments": [] },
+    "expected": { "intent": "criteria_edit", "route": "recruitment.scoring", "tool": "criteria_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_033",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "帮我把这个人的简历处理一下", "attachments": [] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_034",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "出一个面试的东西", "attachments": [] },
+    "expected": { "intent": "interview_plan", "route": "recruitment.interview", "tool": "interview_plan", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_035",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "改改这个岗位的要求", "attachments": [] },
+    "expected": { "intent": "jd_edit", "route": "recruitment.jd", "tool": "jd_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_036",
+    "layer": "agent",
+    "category": "ambiguous",
+    "input": { "message": "帮我看看谁合适", "attachments": [] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  }
+]
