@@ -50,6 +50,24 @@ const routes = [
         component: () => import('@/views/KnowledgeQaView.vue'),
         meta: { title: '知识问答' },
       },
+      {
+        path: 'dashboard',
+        name: 'dashboard',
+        component: () => import('@/views/DashboardView.vue'),
+        meta: { title: '数据看板' },
+      },
+      {
+        path: 'users',
+        name: 'users',
+        component: () => import('@/views/UsersView.vue'),
+        meta: { title: '用户管理' },
+      },
+      {
+        path: 'roles',
+        name: 'roles',
+        component: () => import('@/views/RolesView.vue'),
+        meta: { title: '角色管理' },
+      },
     ],
   },
 ]

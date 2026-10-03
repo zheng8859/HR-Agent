@@ -11,6 +11,8 @@ const auth = useAuthStore()
 const activePath = computed(() => route.path)
 const title = computed(() => route.meta?.title || 'HR Agent')
 const userLabel = computed(() => auth.user?.username || auth.user?.full_name || '未登录')
+const isSuperuser = computed(() => auth.isSuperuser)
+const isHrAdmin = computed(() => auth.isHrAdmin)
 
 onMounted(async () => {
   if (auth.token && !auth.user) {
@@ -40,6 +42,7 @@ function handleLogout() {
         </div>
       </div>
       <el-menu :default-active="activePath" router class="menu">
+        <el-menu-item v-if="isHrAdmin" index="/dashboard">数据看板</el-menu-item>
         <el-sub-menu index="recruit">
           <template #title>智能招聘</template>
           <el-menu-item index="/jd-generator">JD 生成</el-menu-item>
@@ -52,15 +55,17 @@ function handleLogout() {
           <el-menu-item index="/knowledge">知识库管理</el-menu-item>
           <el-menu-item index="/knowledge-qa">知识问答</el-menu-item>
         </el-sub-menu>
-        <el-sub-menu index="system" disabled>
+        <el-sub-menu v-if="isSuperuser" index="system">
           <template #title>系统管理</template>
+          <el-menu-item index="/users">用户管理</el-menu-item>
+          <el-menu-item index="/roles">角色管理</el-menu-item>
         </el-sub-menu>
       </el-menu>
     </el-aside>
 
     <el-container>
       <el-header class="header">
-        <span class="crumb">智能招聘 / {{ title }}</span>
+        <span class="crumb">{{ title }}</span>
         <div class="header-right">
           <el-tag size="small" effect="plain">{{ userLabel }}</el-tag>
           <el-button link type="primary" @click="handleLogout">退出登录</el-button>
