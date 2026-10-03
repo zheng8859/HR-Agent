@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { tokenStorage } from '@/utils/token'
+import { isHrAdmin, isSuperuser } from '@/utils/permission'
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -8,6 +9,8 @@ export const useAuthStore = defineStore('auth', {
   }),
   getters: {
     isAuthenticated: (state) => Boolean(state.token),
+    isSuperuser: (state) => isSuperuser(state.user),
+    isHrAdmin: (state) => isHrAdmin(state.user),
   },
   actions: {
     setAuth(token, user) {
