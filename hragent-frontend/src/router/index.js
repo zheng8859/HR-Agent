@@ -39,6 +39,12 @@ const routes = [
         meta: { title: '智能面试' },
       },
       {
+        path: 'agent',
+        name: 'agent',
+        component: () => import('@/views/HRAgentView.vue'),
+        meta: { title: 'HR Agent' },
+      },
+      {
         path: 'knowledge',
         name: 'knowledge',
         component: () => import('@/views/KnowledgeManagementView.vue'),
