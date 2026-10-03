@@ -15,8 +15,9 @@ from app.evaluations.eval_seed import seed_eval_kb
 from app.models import Base, User
 
 TEST_DB_NAME = "hragent_test"
+# Windows 上 localhost 会优先解析为 IPv6 ::1，asyncpg 直连会超时；显式用 127.0.0.1
 TEST_DATABASE_URL = (
-    "postgresql+asyncpg://hragent:hragent_dev_password@localhost:5432/hragent_test"
+    "postgresql+asyncpg://hragent:hragent_dev_password@127.0.0.1:5432/hragent_test"
 )
 
 # Golden 测试集根目录（doc 42 §6.1：backend/evals/{agent,dify,rag}_cases/*.json）
@@ -26,7 +27,7 @@ EVALS_DIR = Path(__file__).resolve().parent.parent / "evals"
 async def _ensure_test_db() -> None:
     """连到维护库 hragent 创建 hragent_test（CREATE DATABASE 不能在事务内，故用原生 asyncpg）。"""
     conn = await asyncpg.connect(
-        host="localhost",
+        host="127.0.0.1",
         port=5432,
         user="hragent",
         password="hragent_dev_password",

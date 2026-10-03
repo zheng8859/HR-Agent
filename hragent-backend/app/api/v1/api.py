@@ -2,8 +2,12 @@
 from fastapi import APIRouter
 
 from app.api.v1.endpoints import (
+    agent,
     auth,
+    chat,
+    conversations,
     documents,
+    intent,
     interview_plans,
     job_descriptions,
     knowledge_assistant,
@@ -27,3 +31,7 @@ api_router.include_router(knowledge_assistant.router)
 api_router.include_router(stats.router)
 api_router.include_router(users.router)
 api_router.include_router(roles.router)
+api_router.include_router(conversations.router)
+api_router.include_router(intent.router)
+api_router.include_router(chat.router)
+api_router.include_router(agent.router)
