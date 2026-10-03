@@ -1,0 +1,45 @@
+{
+  "generated_at": "2026-10-03T08:54:02.155426+00:00",
+  "tiers": {
+    "l1": {
+      "total": 30,
+      "passed": 30,
+      "failed": 0,
+      "pass_rate": 1.0,
+      "threshold": 0.95
+    },
+    "l2": {
+      "total": 24,
+      "passed": 24,
+      "failed": 0,
+      "pass_rate": 1.0,
+      "threshold": 0.9
+    },
+    "l3": {
+      "total": 120,
+      "passed": 120,
+      "failed": 0,
+      "pass_rate": 1.0,
+      "threshold": 0.85,
+      "suites": {
+        "agent": {
+          "total": 50,
+          "passed": 50,
+          "pass_rate": 1.0
+        },
+        "dify": {
+          "total": 40,
+          "passed": 40,
+          "pass_rate": 1.0
+        },
+        "rag": {
+          "total": 30,
+          "passed": 30,
+          "pass_rate": 1.0
+        }
+      },
+      "pytest_passed": 3,
+      "pytest_failed": 0
+    }
+  }
+}

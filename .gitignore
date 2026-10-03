@@ -39,9 +39,11 @@ Thumbs.db
 node_modules/
 hragent-frontend/dist/
 
-# ===== 评测报告产物（保留 latest 快照） =====
+# ===== 评测报告产物（保留 latest 快照；latest/ 与 html 为可再生成产物） =====
 hragent-backend/evals/reports/*.json
 !hragent-backend/evals/reports/latest.json
+hragent-backend/evals/reports/latest/
+hragent-backend/evals/reports/*.html
 
 # ===== 项目内下载的工具源码 / 生成物（不入库） =====
 OpenSpec-main/
