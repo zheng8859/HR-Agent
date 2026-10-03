@@ -1,0 +1,49 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '@/store/auth'
+import MainLayout from '@/layouts/MainLayout.vue'
+
+const routes = [
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { public: true },
+  },
+  {
+    path: '/',
+    component: MainLayout,
+    redirect: '/jd-generator',
+    children: [
+      {
+        path: 'jd-generator',
+        name: 'jd-generator',
+        component: () => import('@/views/JDGeneratorView.vue'),
+        meta: { title: 'JD 生成' },
+      },
+      {
+        path: 'scoring-criteria',
+        name: 'scoring-criteria',
+        component: () => import('@/views/ScoringCriteriaView.vue'),
+        meta: { title: '评分标准' },
+      },
+    ],
+  },
+]
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes,
+})
+
+router.beforeEach((to) => {
+  const auth = useAuthStore()
+  if (!to.meta.public && !auth.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+  if (to.name === 'login' && auth.isAuthenticated) {
+    return { name: 'jd-generator' }
+  }
+  return true
+})
+
+export default router
