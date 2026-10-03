@@ -18,6 +18,8 @@ pgdata/
 .env
 .env.local
 .env.*.local
+.env.production
+.env.production.local
 
 # ===== IDE =====
 .vscode/
