@@ -74,3 +74,11 @@ async def test_feedback_ownership_isolated(db_session):
     with pytest.raises(HTTPException) as e:
         await conversation_service.add_feedback(other, msg.id, 5, db_session)
     assert e.value.status_code == 404
+
+
+async def test_feedback_only_assistant_message(db_session, eval_user):
+    conv = await conversation_service.create_conversation(eval_user, db_session)
+    user_msg = await conversation_service.add_message(db_session, conv.id, "user", "问")
+    with pytest.raises(HTTPException) as e:
+        await conversation_service.add_feedback(eval_user, user_msg.id, 5, db_session)
+    assert e.value.status_code == 400

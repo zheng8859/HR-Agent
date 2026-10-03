@@ -94,6 +94,11 @@ def _orchestrate(
     missing_fields = list(result["missing_fields"])
     action = result["action"]
 
+    # 高风险锁定唯一真源（铁律 #3 / doc 16 §5.2）：删除类动作由 TOOL_SPECS 强制派生，
+    # 不信任分类器/慢通道 LLM 透传的 requires_confirmation，杜绝绕过确认直接 dispatch。
+    if TOOL_SPECS.get(intent, {}).get("requires_confirmation"):
+        requires_confirmation = True
+
     steps = [AgentStep(id="intent", title="识别意图", status="completed", detail=f"intent={intent}")]
 
     # 角色 gating（doc 14）：employee 触发招聘/删除工具 → 降级 chat

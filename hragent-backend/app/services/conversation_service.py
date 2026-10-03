@@ -99,6 +99,9 @@ async def add_feedback(
         raise HTTPException(status_code=404, detail="消息不存在")
     # 所有权：消息必须属于本人的会话
     await _get_owned_conversation(user, msg.conversation_id, db)
+    # 仅 assistant 消息可评分（doc 43 conversation spec）
+    if msg.role != "assistant":
+        raise HTTPException(status_code=400, detail="仅可对助手回复评分")
     msg.feedback_score = score
     await db.flush()
     await db.refresh(msg)

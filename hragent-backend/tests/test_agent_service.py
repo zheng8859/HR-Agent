@@ -7,6 +7,7 @@ import pytest
 from app.evaluations.eval_utils import AGENT_CONTRACT_FIELDS
 from app.schemas.agent import AgentChatRequest
 from app.services import conversation_service
+from app.services import agent_service
 from app.services.agent_service import _orchestrate, handle_message
 
 
@@ -38,6 +39,26 @@ def test_orchestrate_jd_complete_uses_tool():
 def test_orchestrate_delete_requires_confirmation():
     r = _orchestrate("删除这份 JD", [], _user(), "")
     assert r["intent"] == "resource_delete"
+    assert r["requires_confirmation"] is True
+    assert r["artifacts"][0]["type"] == "delete_resource_candidates"
+
+
+def test_orchestrate_delete_confirmation_from_spec(monkeypatch):
+    """高风险确认由 TOOL_SPECS 强制派生：分类器漏填/填 False 也强制 True（铁律 #3）。"""
+
+    class _FakeClassifier:
+        def classify(self, message, attachments, memory):
+            return {
+                "intent": "resource_delete",
+                "route": "resource",
+                "source": "fast",
+                "requires_confirmation": False,  # 模拟慢通道 LLM 漏填
+                "missing_fields": [],
+                "action": "ask_user",
+            }
+
+    monkeypatch.setattr(agent_service, "intent_classifier", _FakeClassifier())
+    r = _orchestrate("删除这份 JD", [], _user(), "")
     assert r["requires_confirmation"] is True
     assert r["artifacts"][0]["type"] == "delete_resource_candidates"
 
