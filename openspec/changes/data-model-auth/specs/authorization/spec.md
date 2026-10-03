@@ -36,8 +36,8 @@
 
 ### Requirement: 4 角色权限矩阵
 
-系统 SHALL 对 4 角色（`admin` / `hr_manager` / `hr_specialist` / `employee`）× 核心资源（招聘 / 知识 / Agent / 系统管理）× 操作做完整授权断言。
+系统 SHALL 对 4 角色（`admin` / `hr_manager` / `hr_specialist` / `employee`）做完整授权断言，覆盖三个依赖函数（`get_current_user` / `get_current_superuser` / `get_current_admin_by_role`）与核心资源（招聘 / 知识 / Agent / 系统管理）。
 
 #### Scenario: 全组合授权断言成立
-- **WHEN** 遍历 4 角色对核心资源的操作组合
-- **THEN** 授权结果与权限矩阵完全一致（超管全权限、HR 负责人只读、HR 专员限招聘、普通员工限知识问答）
+- **WHEN** 遍历 4 角色对三个依赖函数的授权组合
+- **THEN** 授权结果与 doc 14 功能权限矩阵一致：`admin` 通过全部依赖（含系统管理）；`hr_manager` / `hr_specialist` 通过 `get_current_user` 与 `get_current_admin_by_role`（HR 管理：招聘/统计），但不通过 `get_current_superuser`（系统管理）；`employee` 仅通过 `get_current_user`（知识问答/普通对话）
