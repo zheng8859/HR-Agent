@@ -1,0 +1,102 @@
+[
+  {
+    "id": "golden_dify_024",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "张三", "job_title": "前端开发工程师", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": ["regression"]
+  },
+  {
+    "id": "golden_dify_032",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "李四", "job_title": "后端开发工程师", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_033",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "王五", "job_title": "产品经理", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_034",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "赵六", "job_title": "数据分析师", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_035",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "孙七", "job_title": "UI 设计师", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_036",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "周八", "job_title": "测试工程师", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_037",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "吴九", "job_title": "运营专员", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_038",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "郑十", "job_title": "算法工程师", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_039",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "陈一", "job_title": "人力资源专员", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_040",
+    "layer": "content",
+    "module": "interview",
+    "input": { "candidate_name": "林二", "job_title": "财务专员", "evaluation_id": "bound" },
+    "expected_output": { "structure": ["面试目标", "面试流程", "核心问题", "追问建议", "考察维度", "评分建议", "风险点"], "quality_checks": { "structure_complete": true, "customized": true } },
+    "tolerance": { "structure_min": 0.9 },
+    "eval_type": "dify",
+    "tags": []
+  }
+]

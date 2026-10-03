@@ -1,0 +1,202 @@
+[
+  {
+    "id": "golden_agent_001",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "帮我生成一份前端开发工程师的 JD", "attachments": [] },
+    "expected": { "intent": "jd", "route": "recruitment.jd", "tool": "jd", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_002",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "写一个岗位描述，招聘产品经理", "attachments": [] },
+    "expected": { "intent": "jd", "route": "recruitment.jd", "tool": "jd", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_003",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "帮我生成一份 JD", "attachments": [] },
+    "expected": { "intent": "jd", "route": "recruitment.jd", "tool": "jd", "requires_confirmation": false, "missing_fields": ["job_title"] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": ["missing_field"]
+  },
+  {
+    "id": "golden_agent_004",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "生成招聘需求，岗位是后端工程师，部门技术部", "attachments": [] },
+    "expected": { "intent": "jd", "route": "recruitment.jd", "tool": "jd", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_005",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "帮我起草一个 JD，招一个测试工程师", "attachments": [] },
+    "expected": { "intent": "jd", "route": "recruitment.jd", "tool": "jd", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_006",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "把这份 JD 的任职要求改一下", "attachments": [] },
+    "expected": { "intent": "jd_edit", "route": "recruitment.jd", "tool": "jd_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_008",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "编辑岗位描述，加一条技能要求", "attachments": [] },
+    "expected": { "intent": "jd_edit", "route": "recruitment.jd", "tool": "jd_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_009",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "更新 JD 里的薪资范围", "attachments": [] },
+    "expected": { "intent": "jd_edit", "route": "recruitment.jd", "tool": "jd_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_010",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "调整一下评分标准的权重", "attachments": [] },
+    "expected": { "intent": "criteria_edit", "route": "recruitment.scoring", "tool": "criteria_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_011",
+    "layer": "agent",
+    "category": "jd",
+    "input": { "message": "改一下这个岗位的评分标准", "attachments": [] },
+    "expected": { "intent": "criteria_edit", "route": "recruitment.scoring", "tool": "criteria_edit", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_012",
+    "layer": "agent",
+    "category": "resume",
+    "input": { "message": "评估这份简历", "attachments": ["resume"] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_013",
+    "layer": "agent",
+    "category": "resume",
+    "input": { "message": "帮我筛一下这些候选人的简历", "attachments": ["resume"] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_014",
+    "layer": "agent",
+    "category": "resume",
+    "input": { "message": "给这份简历打个分", "attachments": ["resume"] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_015",
+    "layer": "agent",
+    "category": "resume",
+    "input": { "message": "简历评估一下这个候选人", "attachments": [] },
+    "expected": { "intent": "resume_screening", "route": "recruitment.resume", "tool": "resume_screening", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_016",
+    "layer": "agent",
+    "category": "interview",
+    "input": { "message": "生成一份面试方案", "attachments": [] },
+    "expected": { "intent": "interview_plan", "route": "recruitment.interview", "tool": "interview_plan", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_017",
+    "layer": "agent",
+    "category": "interview",
+    "input": { "message": "安排一下这个候选人的面试流程", "attachments": [] },
+    "expected": { "intent": "interview_plan", "route": "recruitment.interview", "tool": "interview_plan", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_018",
+    "layer": "agent",
+    "category": "interview",
+    "input": { "message": "出个面试问题清单", "attachments": [] },
+    "expected": { "intent": "interview_plan", "route": "recruitment.interview", "tool": "interview_plan", "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": []
+  },
+  {
+    "id": "golden_agent_019",
+    "layer": "agent",
+    "category": "knowledge",
+    "input": { "message": "帮我查一下这个候选人的社保记录", "attachments": [] },
+    "expected": { "intent": "chat", "route": "chat", "tool": null, "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": ["out_of_scope"]
+  },
+  {
+    "id": "golden_agent_020",
+    "layer": "agent",
+    "category": "chat",
+    "input": { "message": "给候选人发一封面试通知邮件", "attachments": [] },
+    "expected": { "intent": "chat", "route": "chat", "tool": null, "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": ["out_of_scope"]
+  },
+  {
+    "id": "golden_agent_022",
+    "layer": "agent",
+    "category": "chat",
+    "input": { "message": "帮我生成一份考试试卷", "attachments": [] },
+    "expected": { "intent": "chat", "route": "chat", "tool": null, "requires_confirmation": false, "missing_fields": [] },
+    "tolerance": { "intent_match": "exact" },
+    "eval_type": "agent",
+    "tags": ["out_of_scope"]
+  }
+]

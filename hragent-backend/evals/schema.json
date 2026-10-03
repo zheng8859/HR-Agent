@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://hragent/evals/schema.json",
+  "title": "HR Agent Golden 测试集样本 Schema（doc 42 §1.2）",
+  "description": "三套样本（agent/dify/rag）由 eval_type 区分，各自字段结构不同。",
+  "type": "object",
+  "required": ["id", "layer", "eval_type"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^golden_(agent|dify|rag)_\\d{3}$" },
+    "eval_type": { "type": "string", "enum": ["agent", "dify", "rag"] },
+    "tags": { "type": "array", "items": { "type": "string" } }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "eval_type": { "const": "agent" } } },
+      "then": {
+        "required": ["input", "expected", "tolerance"],
+        "properties": {
+          "layer": { "const": "agent" },
+          "category": { "enum": ["jd", "resume", "interview", "knowledge", "delete", "chat", "ambiguous", "risky"] },
+          "input": {
+            "type": "object",
+            "required": ["message"],
+            "properties": {
+              "message": { "type": "string" },
+              "attachments": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": ["intent", "route", "requires_confirmation"],
+            "properties": {
+              "intent": { "type": "string" },
+              "route": { "type": "string" },
+              "tool": { "type": ["string", "null"] },
+              "requires_confirmation": { "type": "boolean" },
+              "missing_fields": { "type": "array", "items": { "type": "string" } }
+            }
+          },
+          "tolerance": {
+            "type": "object",
+            "properties": { "intent_match": { "const": "exact" } }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eval_type": { "const": "dify" } } },
+      "then": {
+        "required": ["module", "input", "expected_output", "tolerance"],
+        "properties": {
+          "layer": { "const": "content" },
+          "module": { "enum": ["jd", "scoring", "resume", "interview"] },
+          "input": { "type": "object" },
+          "expected_output": {
+            "type": "object",
+            "required": ["structure", "quality_checks"],
+            "properties": {
+              "structure": { "type": "array", "items": { "type": "string" } },
+              "quality_checks": { "type": "object" }
+            }
+          },
+          "tolerance": {
+            "type": "object",
+            "properties": {
+              "structure_min": { "type": "number" },
+              "score_sum_equals_total": { "type": "boolean" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "eval_type": { "const": "rag" } } },
+      "then": {
+        "required": ["input", "expected", "tolerance"],
+        "properties": {
+          "layer": { "const": "rag" },
+          "input": {
+            "type": "object",
+            "required": ["question"],
+            "properties": {
+              "question": { "type": "string" },
+              "kb": { "type": ["string", "null"] }
+            }
+          },
+          "expected": {
+            "type": "object",
+            "required": ["retrieval", "generation"],
+            "properties": {
+              "retrieval": {
+                "type": "object",
+                "properties": {
+                  "expected_doc_ids": { "type": "array", "items": { "type": "string" } },
+                  "min_recall": { "type": "number" }
+                }
+              },
+              "generation": {
+                "type": "object",
+                "properties": {
+                  "should_contain_keywords": { "type": "array", "items": { "type": "string" } },
+                  "should_refuse": { "type": "boolean" }
+                }
+              }
+            }
+          },
+          "tolerance": {
+            "type": "object",
+            "properties": { "keyword_match_ratio": { "type": "number" } }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,137 @@
+[
+  {
+    "id": "golden_rag_001",
+    "layer": "rag",
+    "input": { "question": "公司考勤怎么打卡", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["考勤管理制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_002",
+    "layer": "rag",
+    "input": { "question": "迟到早退会怎么样", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["考勤管理制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_003",
+    "layer": "rag",
+    "input": { "question": "请假需要谁审批", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["考勤管理制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_004",
+    "layer": "rag",
+    "input": { "question": "加班有加班费吗", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["考勤管理制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_006",
+    "layer": "rag",
+    "input": { "question": "薪资是保密的吗", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["薪酬保密制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_007",
+    "layer": "rag",
+    "input": { "question": "绩效奖金怎么发", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["薪酬保密制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_008",
+    "layer": "rag",
+    "input": { "question": "薪酬结构包含哪些", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["薪酬保密制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_009",
+    "layer": "rag",
+    "input": { "question": "入职需要准备什么材料", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["入职离职流程.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_010",
+    "layer": "rag",
+    "input": { "question": "试用期一般多久", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["入职离职流程.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_011",
+    "layer": "rag",
+    "input": { "question": "离职需要怎么交接", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["入职离职流程.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_012",
+    "layer": "rag",
+    "input": { "question": "年假有几天", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["年假休假制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_013",
+    "layer": "rag",
+    "input": { "question": "休假申请怎么提交", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["年假休假制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_014",
+    "layer": "rag",
+    "input": { "question": "年假可以累计吗", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["年假休假制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_015",
+    "layer": "rag",
+    "input": { "question": "入职第一天需要带什么", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["入职离职流程.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_016",
+    "layer": "rag",
+    "input": { "question": "公司对考勤有什么规定", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": ["考勤管理制度.txt"], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  }
+]

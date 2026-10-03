@@ -1,0 +1,102 @@
+[
+  {
+    "id": "golden_dify_021",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "张三", "job_title": "前端开发工程师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_022",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "李四", "job_title": "后端开发工程师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_023",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "王五", "job_title": "产品经理" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_025",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "赵六", "job_title": "数据分析师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_026",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "孙七", "job_title": "UI 设计师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_027",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "周八", "job_title": "测试工程师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_028",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "吴九", "job_title": "运营专员" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_029",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "郑十", "job_title": "算法工程师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_030",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "陈一", "job_title": "人力资源专员" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_031",
+    "layer": "content",
+    "module": "resume",
+    "input": { "candidate_name": "林二", "job_title": "财务专员" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_reasons": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  }
+]

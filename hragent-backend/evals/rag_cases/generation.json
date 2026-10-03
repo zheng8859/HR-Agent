@@ -1,0 +1,137 @@
+[
+  {
+    "id": "golden_rag_005",
+    "layer": "rag",
+    "input": { "question": "公司有健身房补贴吗", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": true } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": ["regression", "refuse"]
+  },
+  {
+    "id": "golden_rag_017",
+    "layer": "rag",
+    "input": { "question": "公司考勤制度是什么", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["考勤", "打卡"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_018",
+    "layer": "rag",
+    "input": { "question": "薪资保密有什么规定", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["薪资", "保密"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_019",
+    "layer": "rag",
+    "input": { "question": "入职流程是怎样的", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["入职"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_020",
+    "layer": "rag",
+    "input": { "question": "年假怎么申请", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["年假", "申请"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_021",
+    "layer": "rag",
+    "input": { "question": "迟到扣多少钱", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["迟到"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_022",
+    "layer": "rag",
+    "input": { "question": "试用期工资怎么算", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["试用期"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_023",
+    "layer": "rag",
+    "input": { "question": "离职要提前多久通知", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["离职"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_024",
+    "layer": "rag",
+    "input": { "question": "请假有几种类型", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["请假"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_025",
+    "layer": "rag",
+    "input": { "question": "加班怎么申请", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": ["加班", "申请"], "should_refuse": false } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": []
+  },
+  {
+    "id": "golden_rag_026",
+    "layer": "rag",
+    "input": { "question": "公司有食堂吗", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": true } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": ["refuse"]
+  },
+  {
+    "id": "golden_rag_027",
+    "layer": "rag",
+    "input": { "question": "公司发年终奖吗", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": true } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": ["refuse"]
+  },
+  {
+    "id": "golden_rag_028",
+    "layer": "rag",
+    "input": { "question": "出差住宿报销标准是多少", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": true } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": ["refuse"]
+  },
+  {
+    "id": "golden_rag_029",
+    "layer": "rag",
+    "input": { "question": "体检报告在哪里查看", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": true } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": ["refuse"]
+  },
+  {
+    "id": "golden_rag_030",
+    "layer": "rag",
+    "input": { "question": "五险一金缴纳比例是多少", "kb": null },
+    "expected": { "retrieval": { "expected_doc_ids": [], "min_recall": 0.8 }, "generation": { "should_contain_keywords": [], "should_refuse": true } },
+    "tolerance": { "keyword_match_ratio": 0.7 },
+    "eval_type": "rag",
+    "tags": ["refuse"]
+  }
+]

@@ -1,0 +1,102 @@
+[
+  {
+    "id": "golden_dify_011",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "前端开发工程师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_012",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "后端开发工程师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": ["regression"]
+  },
+  {
+    "id": "golden_dify_013",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "产品经理" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_014",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "数据分析师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_015",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "UI 设计师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_016",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "测试工程师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_017",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "运营专员" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_018",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "算法工程师" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_019",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "人力资源专员" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  },
+  {
+    "id": "golden_dify_020",
+    "layer": "content",
+    "module": "scoring",
+    "input": { "job_title": "财务专员" },
+    "expected_output": { "structure": [], "quality_checks": { "score_sum_valid": true, "has_dimensions": true } },
+    "tolerance": { "score_sum_equals_total": true },
+    "eval_type": "dify",
+    "tags": []
+  }
+]
