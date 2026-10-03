@@ -42,7 +42,9 @@ def validate_balance(
 async def generate_scoring_criteria(
     request: ScoringGenerateRequest,
 ) -> ScoringGenerated:
-    output = await dify_client.run_scoring_workflow({})
+    output = await dify_client.run_scoring_workflow(
+        {"job_title": request.job_title, "job_content": request.content or ""}
+    )
     dimensions = [ScoringDimension(**d) for d in output.get("dimensions", [])]
     total_score = int(output.get("total_score", 100))
     balance = validate_balance(dimensions, total_score)

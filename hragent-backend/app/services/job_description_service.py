@@ -76,7 +76,9 @@ def _build_create(
 async def generate_jd(request: JDGenerateRequest) -> JobDescriptionCreate:
     """阻塞式生成 JD 初稿（不落库）。"""
     title = await _resolve_title(request)
-    output = await dify_client.run_jd_workflow({})
+    output = await dify_client.run_jd_workflow(
+        {"title": title, "description": request.description or ""}
+    )
     return _build_create(request, title, output.get("content", ""), output)
 
 
@@ -89,7 +91,9 @@ async def generate_jd_stream(request: JDGenerateRequest) -> AsyncIterator[dict]:
     yield {"event": "thinking", "data": "正在生成 JD 初稿..."}
     try:
         chunks: list[str] = []
-        async for chunk in dify_client.stream_jd_workflow({}):
+        async for chunk in dify_client.stream_jd_workflow(
+            {"title": title, "description": request.description or ""}
+        ):
             chunks.append(chunk)
             yield {"event": "delta", "data": chunk}
         content = "".join(chunks)
