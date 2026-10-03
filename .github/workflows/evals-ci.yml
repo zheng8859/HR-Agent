@@ -1,0 +1,82 @@
+name: Evals CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  l1-gate:
+    name: L1 门禁（阻断）
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r hragent-backend/requirements.txt
+      - name: Run L1 gate（通过率 < 95% 则阻断）
+        working-directory: hragent-backend
+        run: python scripts/run_evals.py --tier l1
+
+  l2-l3-evals:
+    name: L2/L3 评测（告警）
+    needs: l1-gate
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: hragent
+          POSTGRES_PASSWORD: hragent_dev_password
+          POSTGRES_DB: hragent
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hragent"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r hragent-backend/requirements.txt
+
+      - name: Download baseline artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: evals-baseline
+          path: hragent-backend/evals
+        continue-on-error: true
+
+      - name: Run L2/L3 evals（含基线对比）
+        id: evals
+        working-directory: hragent-backend
+        run: |
+          python scripts/run_evals.py --tier all --run-slow \
+            --json --compare evals/baseline.json \
+            --output evals/reports/evals.html > evals/reports/evals-summary.txt 2>&1 || true
+          cat evals/reports/evals-summary.txt
+
+      - name: Upload baseline artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: evals-baseline
+          path: hragent-backend/evals/baseline.json
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: evals-report
+          path: hragent-backend/evals/reports/evals.html
+
+      - name: Comment PR on deterioration
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: evals
+          path: hragent-backend/evals/reports/evals-summary.txt
