@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="HR Agent API", version="0.2.0", lifespan=lifespan)
+app = FastAPI(title="HR Agent API", version="0.4.0", lifespan=lifespan)
 app.include_router(api_router)
 
 
