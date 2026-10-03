@@ -1,11 +1,34 @@
-"""Dify 工作流客户端（方案 A：单应用单 API Key，靠 inputs.type=1~4 在应用内分支）。
+"""Dify 聊天助手客户端（方案 A：单应用单 API Key，靠 inputs.type=1~4 在应用内分支）。
 
 type=1 JD 生成 / type=2 评分标准生成 / type=3 简历评估 / type=4 面试方案。
-未配置密钥（无 .env）时进入 mock 模式，返回确定性产物，保证测试与本地联调可跑
-（见 36 文档前置检查「如果暂时没有，测试使用 mock 数据」）。配置后无需改服务层。
+
+用户的实际 Dify 应用是「聊天助手 / Chatflow（advanced-chat）」应用，走 `/v1/chat-messages`，
+输出在 `answer` 字段（自由文本）——不是工作流应用的 `/v1/workflows/run` 的 structured
+`outputs`。因此 `answer` 既可能是 JSON（type=3 现状）也可能是 markdown（type=1/2/4 现状）。
+客户端统一「优先按 JSON 解析，解析失败退回 `content`」：结构化字段（dimensions / total_score
+/ reason 等）能否拿到，取决于 Dify 应用内各 type 分支是否按要求输出 JSON。
+
+结构化契约（与各 MOCK_* 常量一致，Dify 应用需按此输出 JSON）：
+- type=1 JD：{"content": markdown, "department","location","salary_range","experience_level",
+  "education","job_type","skills","requirements"}（title 由服务层本地解析，不依赖 Dify）
+- type=2 评分标准：{"title","content","total_score","dimensions":[{"name","weight","max_score","description"}]}
+- type=3 简历评估：{"candidate_name","candidate_position","work_years","education_level","school",
+  "dimensions":[{"name","score","max","reason"}]}（total_score 由维度之和推算，不信任返回）
+- type=4 面试方案：{"goal","process","core_questions":[...],"follow_up","dimensions","scoring_advice","risk_points"}
+
+输入映射（后端 service 输入 → Dify 应用输入变量）：
+- jobName            ← title / job_title（岗位名称）
+- jobResponsibilities ← description（JD 生成用的岗位职责描述）
+- jd                 ← job_content（评分/评估/面试用的 JD 内容）
+- jianli             ← resume_content（简历内容）
+- evaluationModel    ← 面试用的简历评估结果 JSON（仅 type=4）
+
+未配置密钥（无 .env）时进入 mock 模式，返回确定性产物（见各 MOCK_*），保证测试与本地联调可跑
+（见 36 文档前置检查「如果暂时没有，测试使用 mock 数据」）。
 """
 from __future__ import annotations
 
+import json
 from typing import Any, AsyncIterator
 
 import httpx
@@ -94,7 +117,7 @@ MOCK_INTERVIEW_OUTPUT: dict[str, Any] = {
 
 
 class DifyClient:
-    """Dify 工作流客户端。无密钥时 mock 模式。"""
+    """Dify 聊天助手客户端。无密钥时 mock 模式。"""
 
     def __init__(self) -> None:
         self.base_url = settings.dify_base_url.rstrip("/")
@@ -108,58 +131,142 @@ class DifyClient:
     def _headers(self) -> dict[str, str]:
         return {"Authorization": f"Bearer {self.api_key}"}
 
-    async def _run_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
-        """阻塞式调用工作流（方案 A：单应用单 key，type 区分分支），返回 outputs。"""
+    async def _chat(self, inputs: dict[str, Any], query: str) -> str:
+        """阻塞式调用聊天助手 /v1/chat-messages，返回 answer 文本。"""
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             resp = await client.post(
-                f"{self.base_url}/v1/workflows/run",
+                f"{self.base_url}/v1/chat-messages",
                 headers=self._headers(),
-                json={"inputs": inputs, "response_mode": "blocking", "user": "hr-agent"},
+                json={
+                    "inputs": inputs,
+                    "query": query,
+                    "response_mode": "blocking",
+                    "conversation_id": "",
+                    "user": "hr-agent",
+                },
             )
             resp.raise_for_status()
-            return resp.json()["data"]["outputs"]
+            return resp.json().get("answer", "") or ""
+
+    @staticmethod
+    def _parse_answer(answer: str) -> dict[str, Any]:
+        """把 answer 解析为结构化 dict：JSON 直接解析；markdown 退回 {"content": answer}。"""
+        text = (answer or "").strip()
+        if text.startswith("{"):
+            try:
+                data = json.loads(text)
+                if isinstance(data, dict):
+                    return data
+            except json.JSONDecodeError:
+                pass
+        return {"content": answer}
 
     async def run_jd_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """type=1：生成 JD。"""
         if self.mock_mode:
             return MOCK_JD_OUTPUT
-        return await self._run_workflow({**inputs, "type": 1})
+        answer = await self._chat(
+            {
+                "type": 1,
+                "jobName": inputs.get("title", ""),
+                "jobResponsibilities": inputs.get("description", ""),
+            },
+            "请根据岗位名称与职责生成一份完整的 JD",
+        )
+        return self._parse_answer(answer)
 
     async def run_scoring_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """type=2：生成评分标准。"""
         if self.mock_mode:
             return MOCK_SCORING_OUTPUT
-        return await self._run_workflow({**inputs, "type": 2})
+        answer = await self._chat(
+            {
+                "type": 2,
+                "jobName": inputs.get("job_title", ""),
+                "jd": inputs.get("job_content", ""),
+            },
+            "请根据岗位生成评分标准",
+        )
+        return self._parse_answer(answer)
 
     async def run_resume_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """type=3：简历评估（五维度打分 + 理由）。"""
         if self.mock_mode:
             return MOCK_RESUME_OUTPUT
-        return await self._run_workflow({**inputs, "type": 3})
+        answer = await self._chat(
+            {
+                "type": 3,
+                "jianli": inputs.get("resume_content", ""),
+                "jobName": inputs.get("job_title", ""),
+                "jd": inputs.get("job_content", ""),
+            },
+            "请评估简历",
+        )
+        return self._parse_answer(answer)
 
     async def run_interview_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
         """type=4：面试方案（七要素）。"""
         if self.mock_mode:
             return MOCK_INTERVIEW_OUTPUT
-        return await self._run_workflow({**inputs, "type": 4})
+        eval_model = {
+            "total_score": inputs.get("total_score"),
+            "evaluation_metrics": inputs.get("evaluation_metrics", []),
+        }
+        answer = await self._chat(
+            {
+                "type": 4,
+                "jianli": inputs.get("resume_content", ""),
+                "jobName": inputs.get("job_title", ""),
+                "jd": inputs.get("job_content", ""),
+                "evaluationModel": json.dumps(eval_model, ensure_ascii=False),
+            },
+            "请生成面试方案",
+        )
+        return self._parse_answer(answer)
 
     async def stream_jd_workflow(self, inputs: dict[str, Any]) -> AsyncIterator[str]:
-        """type=1 流式：逐块 yield 文本片段（mock 按固定分块）。"""
+        """type=1 流式：逐块 yield 文本片段（mock 按固定分块；真实按 message 事件增量）。"""
         if self.mock_mode:
             for chunk in MOCK_JD_CONTENT_CHUNKS:
                 yield chunk
             return
+        body = {
+            "inputs": {
+                "type": 1,
+                "jobName": inputs.get("title", ""),
+                "jobResponsibilities": inputs.get("description", ""),
+            },
+            "query": "请根据岗位名称与职责生成一份完整的 JD",
+            "response_mode": "streaming",
+            "conversation_id": "",
+            "user": "hr-agent",
+        }
+        prev = ""
         async with httpx.AsyncClient(timeout=self.timeout) as client:
             async with client.stream(
                 "POST",
-                f"{self.base_url}/v1/workflows/run",
+                f"{self.base_url}/v1/chat-messages",
                 headers=self._headers(),
-                json={"inputs": {**inputs, "type": 1}, "response_mode": "streaming", "user": "hr-agent"},
+                json=body,
             ) as resp:
                 resp.raise_for_status()
                 async for line in resp.aiter_lines():
-                    if line.startswith("data:"):
-                        yield line[len("data:"):].strip()
+                    if not line.startswith("data:"):
+                        continue
+                    payload = line[len("data:"):].strip()
+                    if not payload or payload == "[DONE]":
+                        continue
+                    try:
+                        event = json.loads(payload)
+                    except json.JSONDecodeError:
+                        continue
+                    if event.get("event") != "message":
+                        continue
+                    answer = event.get("answer", "")
+                    delta = answer[len(prev):] if answer.startswith(prev) else answer
+                    prev = answer
+                    if delta:
+                        yield delta
 
 
 # 服务层共享的默认客户端
