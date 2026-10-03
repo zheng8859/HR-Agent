@@ -2,6 +2,7 @@
 from app.models.base import Base, BaseModel
 from app.models.conversation import Conversation, ConversationStatus
 from app.models.document import Document, DocumentStatus
+from app.models.eval import EvalRun, GoldenSample
 from app.models.interview_plan import InterviewPlan
 from app.models.jd_status import JDStatus
 from app.models.job_description import JobDescription
@@ -20,6 +21,8 @@ __all__ = [
     "ConversationStatus",
     "Document",
     "DocumentStatus",
+    "EvalRun",
+    "GoldenSample",
     "InterviewPlan",
     "JDStatus",
     "JobDescription",
