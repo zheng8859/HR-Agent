@@ -1,4 +1,4 @@
-"""Dify 工作流客户端：type=1 JD 生成 / type=2 评分标准生成。
+"""Dify 工作流客户端：type=1 JD 生成 / type=2 评分标准生成 / type=3 简历评估。
 
 未配置密钥（无 .env）时进入 mock 模式，返回确定性产物，保证测试与本地联调可跑
 （见 36 文档前置检查「如果暂时没有，测试使用 mock 数据」）。配置后无需改服务层。
@@ -53,6 +53,23 @@ MOCK_SCORING_OUTPUT: dict[str, Any] = {
     ],
 }
 
+# type=3 简历评估 mock：五维度各带 score/max/reason，维度之和 = total_score（78）
+MOCK_RESUME_OUTPUT: dict[str, Any] = {
+    "candidate_name": "张三",
+    "candidate_position": "前端开发工程师",
+    "education_level": "本科",
+    "school": "示例大学",
+    "work_years": 5,
+    "total_score": 78,
+    "dimensions": [
+        {"name": "学历匹配度", "score": 16, "max": 20, "reason": "本科学历，与岗位要求本科及以上匹配"},
+        {"name": "工作经验", "score": 20, "max": 25, "reason": "五年相关工作经验，经验深度达标"},
+        {"name": "技能匹配度", "score": 22, "max": 25, "reason": "掌握 Vue/TypeScript 等核心技能"},
+        {"name": "项目经验匹配度", "score": 14, "max": 20, "reason": "有中台与微前端项目经验"},
+        {"name": "综合素质", "score": 6, "max": 10, "reason": "沟通表达清晰，稳定性良好"},
+    ],
+}
+
 
 class DifyClient:
     """Dify 工作流客户端。无密钥时 mock 模式。"""
@@ -91,6 +108,12 @@ class DifyClient:
         if self.mock_mode:
             return MOCK_SCORING_OUTPUT
         return await self._run_workflow(settings.dify_scoring_workflow_id, inputs)
+
+    async def run_resume_workflow(self, inputs: dict[str, Any]) -> dict[str, Any]:
+        """type=3：简历评估（五维度打分 + 理由）。"""
+        if self.mock_mode:
+            return MOCK_RESUME_OUTPUT
+        return await self._run_workflow(settings.dify_resume_workflow_id, inputs)
 
     async def stream_jd_workflow(self, inputs: dict[str, Any]) -> AsyncIterator[str]:
         """type=1 流式：逐块 yield 文本片段（mock 按固定分块）。"""

@@ -31,7 +31,8 @@ class ResumeEvaluation(BaseModel):
     education_level: Mapped[str | None] = mapped_column(String(128), nullable=True)
     school: Mapped[str | None] = mapped_column(String(255), nullable=True)
     total_score: Mapped[float | None] = mapped_column(Float, nullable=True)
-    evaluation_metrics: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    # 五维度打分明细（含理由）：[{name, score, max, reason}, ...]
+    evaluation_metrics: Mapped[list | None] = mapped_column(JSONB, nullable=True)
     status: Mapped[str] = mapped_column(
         String(32), default=ResumeEvaluationStatus.pending.value, nullable=False
     )
