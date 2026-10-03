@@ -43,6 +43,7 @@ function handleLogout() {
       </div>
       <el-menu :default-active="activePath" router class="menu">
         <el-menu-item v-if="isHrAdmin" index="/dashboard">数据看板</el-menu-item>
+        <el-menu-item index="/agent">HR Agent</el-menu-item>
         <el-sub-menu index="recruit">
           <template #title>智能招聘</template>
           <el-menu-item index="/jd-generator">JD 生成</el-menu-item>
