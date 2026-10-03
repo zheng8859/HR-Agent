@@ -16,7 +16,7 @@ pydantic-settings
 
 # 认证
 python-jose[cryptography]
-passlib[bcrypt]
+bcrypt
 
 # 外部服务调用
 httpx
