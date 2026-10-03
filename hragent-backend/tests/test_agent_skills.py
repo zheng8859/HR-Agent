@@ -180,3 +180,20 @@ async def test_delete_confirm_executes(eval_user, db_session):
     assert outcome.artifacts[0]["type"] == "delete_resource_result"
     from app.services import job_description_service
     assert all(j.id != jd.id for j in await job_description_service.list_jds(db_session))
+
+
+async def test_delete_jd_with_dependents_refuses(eval_user, db_session):
+    """有依赖（评分标准）时拒绝删除并说明，不级联、不崩溃（联调发现的 FK 冲突）。"""
+    jd = await _seed_jd(db_session)
+    db_session.add(ScoringCriteria(title="前端工程师 评分标准", content="正文", job_description_id=jd.id))
+    await db_session.flush()
+    outcome = await skill_dispatcher.dispatch(
+        "resource_delete", _params("确认删除前端工程师的 JD"), eval_user, db_session
+    )
+    assert outcome.executed is False
+    assert outcome.requires_confirmation is True
+    assert outcome.artifacts[0]["type"] == "delete_resource_candidates"
+    assert "评分标准" in outcome.message
+    # 未删除
+    from app.services import job_description_service
+    assert any(j.id == jd.id for j in await job_description_service.list_jds(db_session))

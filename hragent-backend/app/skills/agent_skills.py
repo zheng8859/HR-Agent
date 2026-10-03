@@ -12,9 +12,10 @@ from dataclasses import dataclass, field
 from typing import Any, Callable
 
 from fastapi import HTTPException
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models import User
+from app.models import ResumeEvaluation, ScoringCriteria, User
 from app.schemas.agent import AgentStep
 from app.schemas.interview_plan import InterviewPlanGenerateRequest
 from app.schemas.job_description import JDGenerateRequest
@@ -343,8 +344,8 @@ class AgentSkillDispatcher:
             )
 
         # 确认阶段：真实删除
-        result = await self._execute_delete(resource_type, message, db)
-        if result is None:
+        deleted, error = await self._execute_delete(resource_type, message, db)
+        if deleted is None:
             return ToolOutcome(
                 artifacts=[
                     {
@@ -355,11 +356,11 @@ class AgentSkillDispatcher:
                     }
                 ],
                 requires_confirmation=True,
-                message="无法定位唯一删除目标，请指明具体名称。",
+                message=error or "无法定位唯一删除目标，请指明具体名称。",
             )
         return ToolOutcome(
-            artifacts=[{"type": "delete_resource_result", "intent": "resource_delete", "deleted": result}],
-            message=f"已删除：{result}。",
+            artifacts=[{"type": "delete_resource_result", "intent": "resource_delete", "deleted": deleted}],
+            message=f"已删除：{deleted}。",
             executed=True,
         )
 
@@ -387,23 +388,66 @@ class AgentSkillDispatcher:
 
     async def _execute_delete(
         self, resource_type: str | None, message: str, db: AsyncSession
-    ) -> str | None:
+    ) -> tuple[str | None, str | None]:
+        """真实删除，返回 `(已删除标题, 错误原因)`；有依赖时拒绝并说明（受控自动化，不级联）。"""
         target = _extract_target(message)
         if resource_type == "jd":
             jds = await job_description_service.list_jds(db)
             matches = [j for j in jds if target and target in (j.title or "")]
             if len(matches) != 1:
-                return None
-            await job_description_service.delete_jd(matches[0].id, db)
-            return matches[0].title
+                return None, "无法定位唯一删除目标，请指明具体名称。"
+            jd = matches[0]
+            deps = await self._jd_dependents(jd, db)
+            if deps:
+                return None, f"JD「{jd.title}」存在关联的 {deps}，请先删除后再试。"
+            await job_description_service.delete_jd(jd.id, db)
+            return jd.title, None
         if resource_type == "scoring_criteria":
             scs = await scoring_criteria_service.list_scoring_criteria(db)
             matches = [s for s in scs if target and target in (s.title or "")]
             if len(matches) != 1:
-                return None
-            await scoring_criteria_service.delete_scoring_criteria(matches[0].id, db)
-            return matches[0].title
-        return None
+                return None, "无法定位唯一删除目标，请指明具体名称。"
+            sc = matches[0]
+            deps = await self._criteria_dependents(sc, db)
+            if deps:
+                return None, f"评分标准「{sc.title}」存在关联的 {deps}，请先删除后再试。"
+            await scoring_criteria_service.delete_scoring_criteria(sc.id, db)
+            return sc.title, None
+        return None, "暂不支持删除该类型资源。"
+
+    async def _jd_dependents(self, jd: Any, db: AsyncSession) -> str | None:
+        """JD 依赖的评分标准 / 简历评估（删除前提示，不级联）。"""
+        sc = (
+            await db.execute(
+                select(func.count()).select_from(ScoringCriteria).where(
+                    ScoringCriteria.job_description_id == jd.id
+                )
+            )
+        ).scalar() or 0
+        re_ = (
+            await db.execute(
+                select(func.count()).select_from(ResumeEvaluation).where(
+                    ResumeEvaluation.job_description_id == jd.id
+                )
+            )
+        ).scalar() or 0
+        parts = []
+        if sc:
+            parts.append(f"{sc} 份评分标准")
+        if re_:
+            parts.append(f"{re_} 份简历评估")
+        return "、".join(parts) or None
+
+    async def _criteria_dependents(self, sc: Any, db: AsyncSession) -> str | None:
+        """评分标准依赖的简历评估（删除前提示，不级联）。"""
+        re_ = (
+            await db.execute(
+                select(func.count()).select_from(ResumeEvaluation).where(
+                    ResumeEvaluation.scoring_criteria_id == sc.id
+                )
+            )
+        ).scalar() or 0
+        return f"{re_} 份简历评估" if re_ else None
 
 
 # 服务层共享的默认分发器
