@@ -54,3 +54,21 @@ async def db_session(engine):
         yield session
         await session.rollback()
         await session.close()
+
+
+@pytest_asyncio.fixture
+async def client(db_session):
+    """httpx ASGI 客户端：get_db 依赖覆盖到测试事务，便于端点级测试。"""
+    import httpx
+
+    from app.core.database import get_db
+    from app.main import app
+
+    async def override_get_db():
+        yield db_session
+
+    app.dependency_overrides[get_db] = override_get_db
+    transport = httpx.ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as c:
+        yield c
+    app.dependency_overrides.clear()

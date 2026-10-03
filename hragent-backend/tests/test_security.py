@@ -39,7 +39,9 @@ def test_jwt_expired():
 
 def test_jwt_tampered():
     token = create_access_token(subject="alice")
-    # 篡改最后一个字符
-    tampered = token[:-1] + ("a" if token[-1] != "a" else "b")
+    # 篡改 payload 段首字符（签名必然失配；篡改签名末字符可能只改 padding 位而不报错）
+    header, payload, sig = token.split(".")
+    payload = ("b" if payload[0] != "b" else "a") + payload[1:]
+    tampered = f"{header}.{payload}.{sig}"
     with pytest.raises(JWTError):
         decode_access_token(tampered)

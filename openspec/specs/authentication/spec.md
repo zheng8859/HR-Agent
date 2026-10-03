@@ -44,3 +44,23 @@
 #### Scenario: 篡改令牌签名校验失败
 - **WHEN** 校验一个 payload 被改动但签名未重新计算的令牌
 - **THEN** 签名校验失败，令牌被拒绝
+
+### Requirement: 密码登录签发 JWT
+
+系统 SHALL 提供 `/auth/login`，校验用户名密码后签发 JWT。
+
+#### Scenario: 凭证正确
+- **WHEN** 以正确用户名密码登录
+- **THEN** 返回 access token
+
+#### Scenario: 凭证错误
+- **WHEN** 密码错误或用户不存在
+- **THEN** 返回 401
+
+### Requirement: 当前用户查询
+
+系统 SHALL 提供 `/auth/me`，返回当前登录用户。
+
+#### Scenario: 有效令牌
+- **WHEN** 携带有效令牌访问 /auth/me
+- **THEN** 返回当前用户信息
