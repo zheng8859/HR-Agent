@@ -1,4 +1,4 @@
-"""面试方案服务单元测试：守卫、候选人四态、七要素、状态联动、导出、重新生成、所有权。"""
+"""面试方案服务单元测试：守卫、候选人四态、三要素、状态联动、导出、重新生成、所有权。"""
 import uuid
 from types import SimpleNamespace
 
@@ -74,19 +74,15 @@ def test_resolve_candidate_ambiguous():
     assert len(r.matches) == 2
 
 
-# ---------- 七要素结构 ----------
+# ---------- 三要素结构 ----------
 
 
-def test_format_plan_contains_seven_sections():
+def test_format_plan_contains_three_sections():
     content = svc.format_plan(
         {
             "goal": "目标",
             "process": "流程",
             "core_questions": ["问题一", "问题二"],
-            "follow_up": "追问",
-            "dimensions": "维度",
-            "scoring_advice": "评分建议",
-            "risk_points": "风险",
         }
     )
     for header in svc.INTERVIEW_SECTION_TITLES:
