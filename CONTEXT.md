@@ -94,3 +94,49 @@
 | 通义千问 | Qwen LLM | 文本生成、意图判断、知识问答的大模型 |
 | 向量化服务 | Embedding Service | 文档切片转 1536 维向量 |
 | 重排服务 | Rerank Service | gte-rerank-v2，检索结果重排，可降级 |
+
+## 八、数据模型与认证架构（v0.2.0 · 阶段 35）
+
+> 本节是 35-数据模型与认证体系 的架构口径，与 17/14/20 三份设计文档对齐。术语定义见一~七节，此处只补实体关系、依赖链与认证流程三件事。
+
+### 8.1 实体关系概要（本地 10 模型）
+
+```
+User | Role（+user_role 中间表）
+  └→ Conversation → Message（parent_message_id 自引用）
+KnowledgeBase → Document（embedding = Vector(1536)）
+
+招聘四环节外键闭环（全本地表）：
+JobDescription ──job_description_id→ ScoringCriteria
+JobDescription ──job_description_id→ ResumeEvaluation
+ScoringCriteria ──scoring_criteria_id→ ResumeEvaluation
+ResumeEvaluation ──resume_evaluation_id→ InterviewPlan
+```
+
+- 招聘三实体（JD / 评分标准 / 面试方案）**本地建表存 PostgreSQL**，不依赖任何远程服务。
+- 面试方案必须绑定一条「已完成」的简历评估（`resume_evaluation_id` 外键，防空转）。
+
+### 8.2 依赖链与外键创建顺序
+
+```
+① User、Role（+user_role 中间表）      ← 无外键依赖，最先建
+② Conversation、KnowledgeBase           ← 引用 User
+③ Message（→ Conversation）、Document（→ KnowledgeBase + User）
+④ JobDescription（→ User / Conversation）
+⑤ ScoringCriteria（→ JobDescription）、ResumeEvaluation（→ JobDescription + ScoringCriteria）
+⑥ InterviewPlan（→ ResumeEvaluation）
+```
+
+### 8.3 认证流程
+
+```
+登录（OAuth2 密码流）
+  → 校验用户名/密码（passlib[bcrypt] 哈希比对）
+  → 签发 JWT（python-jose，含过期时间）
+  → 后续请求带 Authorization: Bearer <token>
+  → 依赖注入校验（执行顺序：认证 → 权限 → 业务逻辑）
+      get_current_user            JWT 解析 + 用户存在 + 是否启用
+      get_current_superuser       必须超级管理员
+      get_current_admin_by_role   按角色判断管理员权限
+  → 权限真门在后端：前端隐藏只是体验优化，后端依赖注入才是唯一安全边界
+```
