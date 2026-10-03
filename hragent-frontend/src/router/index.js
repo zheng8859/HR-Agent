@@ -32,6 +32,12 @@ const routes = [
         component: () => import('@/views/ResumeScreeningView.vue'),
         meta: { title: '简历筛选' },
       },
+      {
+        path: 'interview',
+        name: 'interview',
+        component: () => import('@/views/SmartInterviewView.vue'),
+        meta: { title: '智能面试' },
+      },
     ],
   },
 ]

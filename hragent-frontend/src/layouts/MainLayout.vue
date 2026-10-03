@@ -45,7 +45,7 @@ function handleLogout() {
           <el-menu-item index="/jd-generator">JD 生成</el-menu-item>
           <el-menu-item index="/scoring-criteria">评分标准</el-menu-item>
           <el-menu-item index="/resume-screening">简历筛选</el-menu-item>
-          <el-menu-item index="/interview" disabled>智能面试</el-menu-item>
+          <el-menu-item index="/interview">智能面试</el-menu-item>
         </el-sub-menu>
         <el-sub-menu index="knowledge" disabled>
           <template #title>知识助理</template>
