@@ -111,6 +111,20 @@ async def _fulltext_scores(
     return {r[0]: float(r[1]) / float(max_rank) for r in rows}
 
 
+def _embedding_similarity(
+    question: str, doc: Document, query_vec: list[float]
+) -> float:
+    """向量分：真实 embedding 用余弦相似度；mock（未配置 embedding）退回词面覆盖率。
+
+    词面 bag-of-words 的 mock 向量在「短问句 vs 长文档」下余弦会被文档长度稀释（分母
+    sqrt(|q|·|d|）），导致明显相关的长文档余弦过低、被 0.2 阈值误杀。改用查询词项在
+    文档中的覆盖占比，让离线态检索也能命中长文档（真实 embedding 不受此影响）。
+    """
+    if settings.embedding_configured:
+        return vector_score(query_vec, list(doc.embedding))
+    return lexical_overlap(question, doc.extracted_content or "")
+
+
 async def retrieve(
     question: str,
     user: User,
@@ -123,7 +137,7 @@ async def retrieve(
     text_scores = await _fulltext_scores(question, user.id, knowledge_base_id, db)
     scored: list[dict] = []
     for doc in docs:
-        vs = vector_score(query_vec, list(doc.embedding))
+        vs = _embedding_similarity(question, doc, query_vec)
         ts = text_scores.get(doc.id, 0.0)
         scored.append(
             {

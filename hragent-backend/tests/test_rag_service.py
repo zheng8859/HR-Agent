@@ -133,6 +133,27 @@ async def test_ask_returns_answer_and_sources(db_session):
     assert result["confidence"] >= 0.2
 
 
+async def test_ask_with_long_document_matches(db_session):
+    """长文档 + 短问句：mock 词面覆盖应命中（防长度稀释回归，doc 40 联调发现）。"""
+    user = await _make_user(db_session)
+    kb = await _make_kb(db_session)
+    await _make_doc(
+        db_session,
+        user,
+        kb,
+        "差旅管理办法.pdf",
+        "第四章 住宿及差旅标准 第4.2条：因公出差普通雇员住宿报销标准实行区域限额制。"
+        "一线城市（北上广深）：普通员工住宿上限为 500 元/间/夜；"
+        "新一线及各省会城市：住宿上限为 380 元/间/夜。"
+        "任何超标准开支需事前递交 OA 走部门总监级特殊批准单，"
+        "并在差旅终结后 5 个工作日内附审批凭证递交财务部清算。",
+    )
+    result = await rag_service.ask("出差住宿标准是多少", user, None, db_session)
+    assert result["answered"] is True
+    assert result["document_chunks"]
+    assert result["document_chunks"][0]["document_name"] == "差旅管理办法.pdf"
+
+
 async def test_ask_refuses_when_no_match(db_session):
     user = await _make_user(db_session)
     kb = await _make_kb(db_session)
