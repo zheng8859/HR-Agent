@@ -46,6 +46,25 @@ async def test_jd_complete_returns_jd_confirm(eval_user, db_session):
     assert art["draft"]["title"] == "前端工程师"
 
 
+async def test_jd_with_description_extracts_clean_title(eval_user, db_session):
+    """「生成全栈工程师JD，本科，…」只取「全栈工程师」，而非整句。
+
+    回归：整句超 Dify jobName 的 48 字上限，会被 400 拒收、Agent 卡「正在思考」。
+    """
+    outcome = await skill_dispatcher.dispatch(
+        "jd",
+        _params(
+            "生成全栈工程师JD，本科，熟悉JAVA,Python,10年以上经验，"
+            "熟悉食品行业业务流程痛点，精通需求预测，30K-40K"
+        ),
+        eval_user,
+        db_session,
+    )
+    assert outcome.missing_fields == []
+    assert outcome.artifacts[0]["type"] == "jd_confirm"
+    assert outcome.artifacts[0]["draft"]["title"] == "全栈工程师"
+
+
 # ---------- jd_edit / criteria_edit（编辑定位） ----------
 
 

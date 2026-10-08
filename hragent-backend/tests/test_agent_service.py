@@ -102,3 +102,22 @@ async def test_handle_message_audit_high_risk(db_session, eval_user, caplog):
             AgentChatRequest(message="删除这份 JD"), eval_user, db_session
         )
     assert any("high_risk" in r.message for r in caplog.records)
+
+
+async def test_stream_chat_yields_error_on_tool_failure(db_session, eval_user, monkeypatch):
+    """工具/外部服务失败时发 error 事件并终止流，而非静默断流导致前端卡「正在思考」。"""
+    from app.services import job_description_service
+
+    async def _boom(request):
+        raise RuntimeError("Dify 调用失败（HTTP 400）")
+
+    monkeypatch.setattr(job_description_service, "generate_jd", _boom)
+    events = []
+    async for ev in agent_service.stream_chat(
+        AgentChatRequest(message="生成全栈工程师 JD"), eval_user, db_session
+    ):
+        events.append(ev)
+    assert len(events) == 1
+    assert events[0].startswith("event: error")
+    assert "处理失败，请重试" in events[0]
+    assert "Dify 调用失败（HTTP 400）" in events[0]

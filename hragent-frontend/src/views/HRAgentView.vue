@@ -137,6 +137,9 @@ async function sendText(text) {
           assistant.requiresConfirmation = !!data.requires_confirmation
           assistant.streaming = false
           if (data.conversation_id) currentId.value = data.conversation_id
+        } else if (event === 'error' && data) {
+          assistant.content = (data && data.message) || '处理失败，请重试'
+          assistant.streaming = false
         }
       },
     })

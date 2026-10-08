@@ -56,7 +56,12 @@ _RESOURCE_SUFFIX_RE = re.compile(
 
 
 def _extract_target(message: str) -> str:
-    """从口语化指令抽取资源/候选人名称：循环去句首命令词、去资源类型后缀。"""
+    """从口语化指令抽取资源/候选人名称：循环去句首命令词、截断描述、去资源类型后缀。
+
+    「生成全栈工程师JD，本科，熟悉JAVA,Python…」应只取「全栈工程师」——标题后的逗号（或
+    其它标点）分隔的是学历/经验/薪资等描述，须先按首个分隔符截断，再剥离「JD/岗位/职位」
+    等资源后缀；否则整句会被当成标题（超过 Dify jobName 的 48 字上限而被 400 拒收）。
+    """
     text = (message or "").strip()
     # 反复剥离句首命令词（如「帮我生成一份」「确认删除」），直到句首不再是命令词
     while True:
@@ -64,6 +69,8 @@ def _extract_target(message: str) -> str:
         if not m:
             break
         text = text[m.end():].strip()
+    # 截断标题后的描述段（学历/经验/薪资等，通常用逗号/句号/顿号分隔）
+    text = re.split(r"[，,。；;、]", text, maxsplit=1)[0].strip()
     text = _RESOURCE_SUFFIX_RE.sub("", text).strip().strip("，,。；;的 ")
     return text
 

@@ -96,8 +96,9 @@ async def generate_jd_stream(request: JDGenerateRequest) -> AsyncIterator[dict]:
         ):
             chunks.append(chunk)
             yield {"event": "delta", "data": chunk}
-        content = "".join(chunks)
-        final = _build_create(request, title, content, {})
+        raw = "".join(chunks)
+        output = dify_client._parse_answer(raw)
+        final = _build_create(request, title, output.get("content", ""), output)
         yield {"event": "final", "data": final.model_dump(mode="json")}
     except Exception as exc:  # noqa: BLE001 —— 流式错误需转为可读 error 事件
         yield {"event": "error", "data": f"JD 生成失败，请重试：{exc}"}

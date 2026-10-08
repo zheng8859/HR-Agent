@@ -27,6 +27,7 @@ type=1 JD 生成 / type=2 评分标准生成 / type=3 简历评估 / type=4 面�
 """
 from __future__ import annotations
 
+import asyncio
 import json
 from typing import Any, AsyncIterator
 
@@ -114,6 +115,10 @@ MOCK_INTERVIEW_OUTPUT: dict[str, Any] = {
 class DifyClient:
     """Dify 聊天助手客户端。无密钥时 mock 模式。"""
 
+    # 环境偶发网络抖动（Docker 端口转发）时的重试参数
+    _max_attempts = 3
+    _backoff = 1.0
+
     def __init__(self) -> None:
         self.base_url = settings.dify_base_url.rstrip("/")
         self.api_key = settings.dify_api_key
@@ -127,21 +132,49 @@ class DifyClient:
         return {"Authorization": f"Bearer {self.api_key}"}
 
     async def _chat(self, inputs: dict[str, Any], query: str) -> str:
-        """阻塞式调用聊天助手 /v1/chat-messages，返回 answer 文本。"""
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            resp = await client.post(
-                f"{self.base_url}/v1/chat-messages",
-                headers=self._headers(),
-                json={
-                    "inputs": inputs,
-                    "query": query,
-                    "response_mode": "blocking",
-                    "conversation_id": "",
-                    "user": "hr-agent",
-                },
-            )
-            resp.raise_for_status()
-            return resp.json().get("answer", "") or ""
+        """阻塞式调用聊天助手 /v1/chat-messages，返回 answer 文本。
+
+        网络抖动（ReadError/ConnectError 等 httpx.TransportError）时做有限重试，
+        避免单次抖动直接导致生成失败。4xx/5xx 是 Dify 明确拒绝（如参数校验失败），
+        不重试，提取 Dify 返回的可读原因后抛出。
+        """
+        last_exc: httpx.TransportError | None = None
+        for attempt in range(self._max_attempts):
+            try:
+                async with httpx.AsyncClient(timeout=self.timeout) as client:
+                    resp = await client.post(
+                        f"{self.base_url}/v1/chat-messages",
+                        headers=self._headers(),
+                        json={
+                            "inputs": inputs,
+                            "query": query,
+                            "response_mode": "blocking",
+                            "conversation_id": "",
+                            "user": "hr-agent",
+                        },
+                    )
+                    resp.raise_for_status()
+                    return resp.json().get("answer", "") or ""
+            except httpx.HTTPStatusError as exc:
+                raise RuntimeError(self._http_error_message(exc)) from exc
+            except httpx.TransportError as exc:
+                last_exc = exc
+                if attempt >= self._max_attempts - 1:
+                    break
+                await asyncio.sleep(self._backoff * (attempt + 1))
+        assert last_exc is not None
+        raise last_exc
+
+    @staticmethod
+    def _http_error_message(exc: httpx.HTTPStatusError) -> str:
+        """提取 Dify 返回的可读错误信息（如「jobName ... must be less than 48 characters」）。"""
+        try:
+            data = exc.response.json()
+            if isinstance(data, dict) and data.get("message"):
+                return str(data["message"])
+        except Exception:
+            pass
+        return f"Dify 调用失败（HTTP {exc.response.status_code}）"
 
     @staticmethod
     def _parse_answer(answer: str) -> dict[str, Any]:
@@ -231,32 +264,46 @@ class DifyClient:
             "conversation_id": "",
             "user": "hr-agent",
         }
-        prev = ""
-        async with httpx.AsyncClient(timeout=self.timeout) as client:
-            async with client.stream(
-                "POST",
-                f"{self.base_url}/v1/chat-messages",
-                headers=self._headers(),
-                json=body,
-            ) as resp:
-                resp.raise_for_status()
-                async for line in resp.aiter_lines():
-                    if not line.startswith("data:"):
-                        continue
-                    payload = line[len("data:"):].strip()
-                    if not payload or payload == "[DONE]":
-                        continue
-                    try:
-                        event = json.loads(payload)
-                    except json.JSONDecodeError:
-                        continue
-                    if event.get("event") != "message":
-                        continue
-                    answer = event.get("answer", "")
-                    delta = answer[len(prev):] if answer.startswith(prev) else answer
-                    prev = answer
-                    if delta:
-                        yield delta
+        last_exc: httpx.TransportError | None = None
+        for attempt in range(self._max_attempts):
+            started = False
+            try:
+                prev = ""
+                async with httpx.AsyncClient(timeout=self.timeout) as client:
+                    async with client.stream(
+                        "POST",
+                        f"{self.base_url}/v1/chat-messages",
+                        headers=self._headers(),
+                        json=body,
+                    ) as resp:
+                        resp.raise_for_status()
+                        async for line in resp.aiter_lines():
+                            if not line.startswith("data:"):
+                                continue
+                            payload = line[len("data:"):].strip()
+                            if not payload or payload == "[DONE]":
+                                continue
+                            try:
+                                event = json.loads(payload)
+                            except json.JSONDecodeError:
+                                continue
+                            if event.get("event") != "message":
+                                continue
+                            answer = event.get("answer", "")
+                            delta = answer[len(prev):] if answer.startswith(prev) else answer
+                            prev = answer
+                            if delta:
+                                started = True
+                                yield delta
+                return
+            except httpx.TransportError as exc:
+                last_exc = exc
+                # 已开始产出内容后不再重试（避免重复文本）；仅在连接建立阶段重试
+                if started or attempt >= self._max_attempts - 1:
+                    break
+                await asyncio.sleep(self._backoff * (attempt + 1))
+        assert last_exc is not None
+        raise last_exc
 
 
 # 服务层共享的默认客户端

@@ -261,11 +261,19 @@ async def handle_message(
 async def stream_chat(
     request: AgentChatRequest, user: User, db: AsyncSession
 ) -> AsyncIterator[str]:
-    """对话流式 SSE：thinking → plan → delta → final（doc 16 §7.3）。"""
-    conv, memory = await _resolve_conversation(request, user, db)
-    result = await _orchestrate(request.message, request.attachments, user, memory, db)
-    resp = AgentChatResponse(**result, conversation_id=conv.id)
-    await _persist(conv, request, resp, user, db)
+    """对话流式 SSE：thinking → plan → delta → final（doc 16 §7.3）。
+
+    编排/工具/外部服务失败时发 error 事件并终止流，绝不静默断流——否则前端会一直停在
+    「正在思考」收不到任何事件。
+    """
+    try:
+        conv, memory = await _resolve_conversation(request, user, db)
+        result = await _orchestrate(request.message, request.attachments, user, memory, db)
+        resp = AgentChatResponse(**result, conversation_id=conv.id)
+        await _persist(conv, request, resp, user, db)
+    except Exception as exc:  # noqa: BLE001 —— 统一转为可读 error 事件
+        yield build_sse_event("error", {"message": f"处理失败，请重试：{exc}"})
+        return
 
     yield build_sse_event("thinking", {"content": "正在理解你的需求…"})
     yield build_sse_event(
@@ -280,11 +288,18 @@ async def stream_chat(
 async def stream_agent(
     request: AgentChatRequest, user: User, db: AsyncSession
 ) -> AsyncIterator[str]:
-    """任务型流式 SSE：progress → delta → artifact → final（doc 16 §7.3）。"""
-    conv, memory = await _resolve_conversation(request, user, db)
-    result = await _orchestrate(request.message, request.attachments, user, memory, db)
-    resp = AgentChatResponse(**result, conversation_id=conv.id)
-    await _persist(conv, request, resp, user, db)
+    """任务型流式 SSE：progress → delta → artifact → final（doc 16 §7.3）。
+
+    编排/工具/外部服务失败时发 error 事件并终止流，绝不静默断流。
+    """
+    try:
+        conv, memory = await _resolve_conversation(request, user, db)
+        result = await _orchestrate(request.message, request.attachments, user, memory, db)
+        resp = AgentChatResponse(**result, conversation_id=conv.id)
+        await _persist(conv, request, resp, user, db)
+    except Exception as exc:  # noqa: BLE001 —— 统一转为可读 error 事件
+        yield build_sse_event("error", {"message": f"处理失败，请重试：{exc}"})
+        return
 
     yield build_sse_event("progress", {"step": "intent", "detail": f"识别意图: {resp.intent}"})
     for chunk in _chunk_text(resp.message):
