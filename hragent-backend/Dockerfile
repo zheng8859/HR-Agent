@@ -9,8 +9,10 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # 先复制依赖清单，利用层缓存：仅依赖变化才重建安装层
+# PIP_INDEX_URL 可在网络受限环境覆盖为国内镜像，如 --build-arg PIP_INDEX_URL=https://pypi.tuna.tsinghua.edu.cn/simple
+ARG PIP_INDEX_URL=https://pypi.org/simple
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --retries 5 --timeout 120 -i ${PIP_INDEX_URL} -r requirements.txt
 
 # 复制应用代码与迁移脚本
 COPY app ./app
