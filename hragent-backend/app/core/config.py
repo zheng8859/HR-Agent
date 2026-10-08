@@ -14,7 +14,10 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 60 * 24  # 24 小时
 
     # RAG 检索（doc 40：向量 + tsvector 全文，0.7/0.3 加权，阈值过滤）
-    rag_min_similarity_score: float = 0.2
+    # 阈值从 0.2 上调到 0.35：切片级 embedding（doc 15 §4.1）后向量分改为「切片 max-pool」，
+    # max 天然上偏，无关问句的语义余弦被抬到 0.2~0.34，须抬高阈值否则「健身房/食堂/年终奖」
+    # 等无依据问句会越过阈值从拒答变成「没有提到」。实测：有依据 0.45+ / 无依据 ≤0.34。
+    rag_min_similarity_score: float = 0.35
     rag_top_k: int = 5              # 进入生成/重排的候选文档数
     rag_source_chunks: int = 3      # 返回给前端的来源片段数
     rag_vector_weight: float = 0.7  # 向量分权重
@@ -49,7 +52,7 @@ class Settings(BaseSettings):
     embedding_dimension: int = 1536
     embedding_base_url: str = ""
     embedding_api_key: str = ""
-    embedding_model: str = "text-embedding-3-small"
+    embedding_model: str = "text-embedding-v2"
 
     # 语义切片参数（doc 39：每段 ≤500、严禁 >800、超长强制切分、过短合并）
     chunk_max_chars: int = 500

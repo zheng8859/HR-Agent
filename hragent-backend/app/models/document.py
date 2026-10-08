@@ -49,3 +49,9 @@ class Document(BaseModel):
     knowledge_base: Mapped[KnowledgeBase | None] = relationship(
         "KnowledgeBase", back_populates="documents"
     )
+    chunks: Mapped[list[DocumentChunk]] = relationship(
+        "DocumentChunk",
+        back_populates="document",
+        cascade="all, delete-orphan",
+        order_by="DocumentChunk.chunk_index",
+    )

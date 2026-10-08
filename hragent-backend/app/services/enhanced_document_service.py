@@ -16,11 +16,11 @@ import re
 import uuid
 
 from fastapi import HTTPException, UploadFile
-from sqlalchemy import select
+from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.models import Document, DocumentStatus, KnowledgeBase, User
+from app.models import Document, DocumentChunk, DocumentStatus, KnowledgeBase, User
 from app.services.embedding_service import embed_text
 
 
@@ -157,15 +157,34 @@ def chunk_text(
 async def process_document(
     doc: Document, content: bytes, file_type: str, db: AsyncSession
 ) -> Document:
-    """处理文档：提取 → 切片 → 向量化，成功 processed、失败 failed（记录原因）。"""
+    """处理文档：提取 → 切片 → 逐段向量化，成功 processed、失败 failed（记录原因）。
+
+    doc 15 §4.1：语义切片后对每个切片单独生成向量写入 `document_chunks`，检索按切片
+    max-pool。长文档不再被 `_MAX_EMBED_CHARS` 截断，靠后小节（如资产分类）同样可召回。
+    """
     doc.status = DocumentStatus.processing.value
     doc.error_message = None
     await db.flush()
     try:
         text = extract_text(file_type, content)
         doc.extracted_content = text
-        doc.chunk_count = len(chunk_text(text))
-        doc.embedding = embed_text(text)
+        chunks = chunk_text(text)
+        doc.chunk_count = len(chunks)
+        # 逐段向量化：先清旧切片再写入新切片（重新处理幂等）
+        await db.execute(
+            delete(DocumentChunk).where(DocumentChunk.document_id == doc.id)
+        )
+        for i, c in enumerate(chunks):
+            db.add(
+                DocumentChunk(
+                    document_id=doc.id,
+                    chunk_index=i,
+                    chunk_text=c,
+                    embedding=embed_text(c),
+                )
+            )
+        # 文档级单向量不再使用（会被 1800 字截断），置空；检索走切片表
+        doc.embedding = None
         doc.status = DocumentStatus.processed.value
     except ExtractionError as e:
         doc.status = DocumentStatus.failed.value

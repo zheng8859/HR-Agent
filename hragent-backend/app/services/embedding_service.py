@@ -12,7 +12,12 @@ import math
 import random
 import re
 
+import httpx
+
 from app.core.config import settings
+
+# 真实 Embedding 输入上限（text-embedding-v2 约 2048 token，中文按 ~1 token/字保守截断，避免超长文档报错）
+_MAX_EMBED_CHARS = 1800
 
 
 def tokenize_text(text: str) -> list[str]:
@@ -59,8 +64,20 @@ def _random_unit_vec(text: str) -> list[float]:
 
 
 def _embed_remote(text: str) -> list[float]:
-    """调用真实 Embedding API（预留钩子，未接入）。"""
-    raise NotImplementedError("真实 Embedding API 尚未接入")
+    """调用真实 Embedding API（OpenAI 兼容 `/embeddings`），返回 `embedding_dimension` 维向量。"""
+    payload = (text or "").strip()[:_MAX_EMBED_CHARS]
+    if not payload:
+        # 空文本无真实语义，返回零向量（模为 0，检索时余弦为 0，视为不相关）
+        return [0.0] * settings.embedding_dimension
+    resp = httpx.post(
+        f"{settings.embedding_base_url}/embeddings",
+        headers={"Authorization": f"Bearer {settings.embedding_api_key}"},
+        json={"model": settings.embedding_model, "input": payload},
+        timeout=30.0,
+    )
+    resp.raise_for_status()
+    vec = resp.json()["data"][0]["embedding"]
+    return [float(x) for x in vec]
 
 
 def embed_text(text: str) -> list[float]:

@@ -28,6 +28,7 @@ python-docx
 # RAG 组织
 langchain
 langchain-community
+jieba
 
 # 测试
 pytest

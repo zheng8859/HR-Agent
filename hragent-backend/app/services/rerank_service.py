@@ -7,7 +7,20 @@ from __future__ import annotations
 
 from typing import Any
 
+import httpx
+
 from app.core.config import settings
+
+# Rerank 单篇文档输入上限（gte-rerank-v2 约 2048 token，中文按 ~1 token/字保守截断）
+_MAX_RERANK_CHARS = 1800
+
+
+def _item_text(item: dict[str, Any]) -> str:
+    """从检索候选项中取出用于重排的文本（优先文档正文，兼容通用 `text`/`chunk_text` 字段）。"""
+    doc = item.get("document")
+    if doc is not None:
+        return (doc.extracted_content or doc.original_filename or "")[:_MAX_RERANK_CHARS]
+    return str(item.get("text") or item.get("chunk_text") or "")[:_MAX_RERANK_CHARS]
 
 
 def rerank(query: str, items: list[dict], top_k: int | None = None) -> list[dict]:
@@ -32,5 +45,22 @@ def rerank_or_fallback(
 
 
 def _rerank_remote(query: str, items: list[dict], top_k: int | None) -> list[dict]:
-    """调用真实 Rerank API（预留钩子，未接入）。"""
-    raise NotImplementedError("真实 Rerank API 尚未接入")
+    """调用真实 Rerank API（dashscope text-rerank），按相关性降序重排并截断到 top_k。"""
+    if not items:
+        return []
+    documents = [_item_text(it) for it in items]
+    n = len(documents)
+    resp = httpx.post(
+        settings.rerank_base_url,
+        headers={"Authorization": f"Bearer {settings.rerank_api_key}"},
+        json={
+            "model": settings.rerank_model,
+            "input": {"query": query, "documents": documents},
+            "parameters": {"top_n": n, "return_documents": False},
+        },
+        timeout=60.0,
+    )
+    resp.raise_for_status()
+    results = resp.json()["output"]["results"]
+    reordered = [items[int(r["index"])] for r in results if 0 <= int(r["index"]) < n]
+    return reordered[:top_k] if top_k is not None else reordered

@@ -10,9 +10,19 @@ from pathlib import Path
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
+from app.core.config import settings
 from app.core.security import create_access_token, get_password_hash
 from app.evaluations.eval_seed import seed_eval_kb
 from app.models import Base, User
+
+# 单元/集成测试一律走确定性 mock，不依赖外部 AI 服务（.env 可能已配置真实 key，
+# 若不清空会走到真实 API 或 NotImplementedError，导致测试偶发失败/外呼）。
+settings.llm_base_url = ""
+settings.llm_api_key = ""
+settings.embedding_base_url = ""
+settings.embedding_api_key = ""
+settings.rerank_base_url = ""
+settings.rerank_api_key = ""
 
 TEST_DB_NAME = "hragent_test"
 # Windows 上 localhost 会优先解析为 IPv6 ::1，asyncpg 直连会超时；显式用 127.0.0.1

@@ -4,8 +4,10 @@ import hashlib
 import pytest
 from fastapi import HTTPException
 
+from sqlalchemy import select
+
 from app.core.config import settings
-from app.models import Document, DocumentStatus, KnowledgeBase, User
+from app.models import Document, DocumentChunk, DocumentStatus, KnowledgeBase, User
 from app.services import enhanced_document_service as svc
 from app.services.embedding_service import embed_text
 
@@ -138,8 +140,16 @@ async def test_process_success(db_session):
     assert doc.status == DocumentStatus.processed.value
     assert doc.extracted_content == "hello world"
     assert doc.chunk_count >= 1
-    assert doc.embedding is not None and len(doc.embedding) == 1536
     assert doc.error_message is None
+    # 切片级向量化（doc 15 §4.1）：逐段写入 document_chunks，文档级单向量置空
+    assert doc.embedding is None
+    chunks = (
+        await db_session.execute(
+            select(DocumentChunk).where(DocumentChunk.document_id == doc.id)
+        )
+    ).scalars().all()
+    assert len(chunks) == doc.chunk_count
+    assert all(len(c.embedding) == 1536 for c in chunks)
 
 
 async def test_process_failed_on_empty(db_session):

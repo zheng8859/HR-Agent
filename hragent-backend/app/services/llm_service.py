@@ -5,7 +5,9 @@
 """
 from __future__ import annotations
 
-from typing import Any
+import json
+
+import httpx
 
 from app.core.config import settings
 from app.services.embedding_service import tokenize_text
@@ -36,6 +38,28 @@ def extract_keywords(text: str, limit: int = 6) -> list[str]:
             if len(out) >= limit:
                 break
     return out
+
+
+def _parse_json(content: str) -> dict[str, Any]:
+    """把 LLM 输出解析为 dict；JSON 直接解析，否则抽取首个 `{...}` 片段再解析，失败返回空 dict。"""
+    text = (content or "").strip()
+    if text.startswith("{"):
+        try:
+            data = json.loads(text)
+            if isinstance(data, dict):
+                return data
+        except json.JSONDecodeError:
+            pass
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end > start:
+        try:
+            data = json.loads(text[start : end + 1])
+            if isinstance(data, dict):
+                return data
+        except json.JSONDecodeError:
+            pass
+    return {}
 
 
 class LLMClient:
@@ -75,16 +99,95 @@ class LLMClient:
             return f"根据《{names}》：{first}"
         return self._generate_remote(question, chunks)
 
-    # ---------- 真实 API 钩子（未接入） ----------
+    # ---------- 真实 API 钩子（OpenAI 兼容 /chat/completions） ----------
+
+    def _chat(
+        self,
+        messages: list[dict[str, str]],
+        temperature: float = 0.2,
+        max_tokens: int | None = None,
+    ) -> str:
+        """调用 OpenAI 兼容 `/chat/completions`，返回首个 choice 的文本。"""
+        payload: dict[str, Any] = {
+            "model": settings.llm_model,
+            "messages": messages,
+            "temperature": temperature,
+        }
+        if max_tokens is not None:
+            payload["max_tokens"] = max_tokens
+        resp = httpx.post(
+            f"{settings.llm_base_url}/chat/completions",
+            headers={"Authorization": f"Bearer {settings.llm_api_key}"},
+            json=payload,
+            timeout=60.0,
+        )
+        resp.raise_for_status()
+        data = resp.json()
+        return (data["choices"][0]["message"].get("content") or "").strip()
 
     def _classify_remote(self, question: str) -> str:
-        raise NotImplementedError("真实 LLM API 尚未接入")
+        content = self._chat(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "你是 HR 助手的意图分类器。判断用户问题是否需要检索企业知识库"
+                        "（制度/政策/流程/报销/请假/福利等）才能准确回答。只输出一个词：KB 或 GENERAL。"
+                    ),
+                },
+                {"role": "user", "content": question},
+            ],
+            temperature=0.0,
+            max_tokens=8,
+        )
+        return "GENERAL" if "GENERAL" in content.upper() else "KB"
 
     def _rewrite_remote(self, question: str) -> dict[str, Any]:
-        raise NotImplementedError("真实 LLM API 尚未接入")
+        content = self._chat(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "你是查询改写器。把用户问题改写为适合在企业知识库中检索的简洁查询，"
+                        "并提取不超过 6 个检索关键词。只输出 JSON："
+                        '{"rewritten_query": "改写后的查询", "expanded_keywords": ["关键词1", "关键词2"]}'
+                    ),
+                },
+                {"role": "user", "content": question},
+            ],
+            temperature=0.0,
+            max_tokens=300,
+        )
+        data = _parse_json(content)
+        rewritten = str(data.get("rewritten_query") or question).strip() or question
+        keywords = data.get("expanded_keywords")
+        if not isinstance(keywords, list):
+            keywords = extract_keywords(question, limit=6)
+        else:
+            keywords = [str(k) for k in keywords if str(k).strip()][:6]
+        return {"rewritten_query": rewritten, "expanded_keywords": keywords}
 
     def _generate_remote(self, question: str, chunks: list[dict]) -> str:
-        raise NotImplementedError("真实 LLM API 尚未接入")
+        if not chunks:
+            return ""
+        context = "\n\n".join(
+            f"【来源：{c.get('document_name', '文档')}】{c.get('chunk_text', '')}"
+            for c in chunks
+        )
+        return self._chat(
+            [
+                {
+                    "role": "system",
+                    "content": (
+                        "你是企业 HR 智能助手。只依据给定的参考资料回答，不要编造资料中没有的内容；"
+                        "资料不足以回答时明确说明。回答使用简体中文，简洁准确。"
+                    ),
+                },
+                {"role": "user", "content": f"问题：{question}\n\n参考资料：\n{context}"},
+            ],
+            temperature=0.3,
+            max_tokens=800,
+        )
 
 
 # 服务层共享的默认客户端
